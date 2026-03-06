@@ -46,7 +46,6 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollTargetIdRef = useRef<number | null>(null);
-  const scrollLockedRef = useRef(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const { data: states } = useQuery<State[]>({
@@ -61,14 +60,13 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
   const scrollToBottom = () => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+    }, 150);
   };
 
   const addMessages = useCallback((...msgs: Omit<Message, "id">[]) => {
     const newMsgs = msgs.map((m) => ({ ...m, id: nextId() }));
-    if (scrollTargetIdRef.current === null && !scrollLockedRef.current) {
-      scrollTargetIdRef.current = newMsgs[0].id;
-    }
+    // Track the first new message so we can scroll to it
+    scrollTargetIdRef.current = newMsgs[0].id;
     setMessages((prev) => [...prev, ...newMsgs]);
   }, []);
 
@@ -81,16 +79,16 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
   useEffect(() => {
     if (scrollTargetIdRef.current !== null) {
       const targetId = scrollTargetIdRef.current;
-      requestAnimationFrame(() => {
+      scrollTargetIdRef.current = null;
+      // Use a short delay to let the DOM render the new messages
+      setTimeout(() => {
         const targetEl = document.querySelector(`[data-msg-id="${targetId}"]`);
         if (targetEl) {
           targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
         } else {
           messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }
-        scrollTargetIdRef.current = null;
-        scrollLockedRef.current = true;
-      });
+      }, 50);
     }
   }, [messages]);
 
@@ -555,7 +553,6 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
     const query = searchQuery.trim();
     if (!query) return;
     setSearchQuery("");
-    scrollLockedRef.current = false;
 
     const vague = hasVagueReference(query);
 
@@ -721,7 +718,6 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
   };
 
   const handleOptionClick = (value: string) => {
-    scrollLockedRef.current = false;
     if (
       value === "same" ||
       value === "different" ||
@@ -761,8 +757,7 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
       )}
 
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] flex flex-col shadow-xl rounded-md border bg-background overflow-hidden"
-          style={{ height: "min(520px, calc(100vh - 6rem))" }}
+        <div className="fixed z-50 flex flex-col shadow-xl border bg-background overflow-hidden inset-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-[360px] sm:max-w-[calc(100vw-2rem)] sm:rounded-md sm:max-h-[calc(100vh-6rem)] sm:h-[520px]"
           data-testid="panel-instructor-chat"
         >
           <div className="flex items-center justify-between gap-2 px-4 py-3 bg-primary text-primary-foreground flex-shrink-0">
