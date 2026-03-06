@@ -217,20 +217,10 @@ export default function Home() {
           ) : (
             <>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                {filteredStates?.slice(0, 10).map((state) => (
+                {filteredStates?.map((state) => (
                   <StateCard key={state.id} state={state} />
                 ))}
               </div>
-              {filteredStates && filteredStates.length > 10 && (
-                <div className="text-center mt-8">
-                  <Link href="/states">
-                    <Button variant="outline" data-testid="button-view-all-states">
-                      View All States
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              )}
               {filteredStates?.length === 0 && searchQuery && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">No states found matching "{searchQuery}"</p>
@@ -288,8 +278,8 @@ export default function Home() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-green-800 to-green-950 flex items-center justify-center">
-                        <BookOpen className="h-12 w-12 text-green-300 opacity-50" />
+                      <div className="w-full h-full bg-gradient-to-br from-blue-700 to-blue-950 flex items-center justify-center">
+                        <BookOpen className="h-12 w-12 text-blue-300 opacity-50" />
                       </div>
                     )}
                   </div>
