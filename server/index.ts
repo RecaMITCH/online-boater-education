@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { seedDatabase } from "./seed";
+import { runMigrations } from "./migrate";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -82,9 +83,10 @@ app.use((req, res, next) => {
   await registerRoutes(httpServer, app);
 
   try {
+    await runMigrations();
     await seedDatabase();
   } catch (error) {
-    console.error("Seed error:", error);
+    console.error("Migration/Seed error:", error);
   }
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
