@@ -1,4 +1,6 @@
-node_modules/
-.env
+node_modules
+dist
 .DS_Store
-deploy.sh
+server/public
+vite.config.ts.*
+*.tar.gz
