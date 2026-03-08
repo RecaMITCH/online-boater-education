@@ -66,10 +66,13 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
 
   const addMessages = useCallback((...msgs: Omit<Message, "id">[]) => {
     const newMsgs = msgs.map((m) => ({ ...m, id: nextId() }));
-    // Only set scroll target once per turn — this keeps us at the TOP
-    // of the first response, even when follow-up messages (resources etc.) are added later
+    // Only scroll to the first INSTRUCTOR message of this turn — skip user messages
+    // This ensures we scroll to the start of the captain's response, not the user's bubble
     if (!hasScrolledThisTurnRef.current && scrollTargetIdRef.current === null) {
-      scrollTargetIdRef.current = newMsgs[0].id;
+      const firstInstructor = newMsgs.find((m) => m.role === "instructor");
+      if (firstInstructor) {
+        scrollTargetIdRef.current = firstInstructor.id;
+      }
     }
     setMessages((prev) => [...prev, ...newMsgs]);
   }, []);
