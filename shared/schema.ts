@@ -58,7 +58,13 @@ export const articles = pgTable("articles", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertArticleSchema = createInsertSchema(articles).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertArticleSchema = createInsertSchema(articles).omit({ id: true, createdAt: true, updatedAt: true }).extend({
+  publishedAt: z.union([z.string(), z.date(), z.null()]).optional().transform((val) => {
+    if (!val) return null;
+    if (val instanceof Date) return val;
+    return new Date(val);
+  }),
+});
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Article = typeof articles.$inferSelect;
 
