@@ -30,6 +30,8 @@ import {
   ExternalLink,
   Settings,
   KeyRound,
+  ImageIcon,
+  Upload,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { State, Article, InsertState, InsertArticle, Resource, InsertResource } from "@shared/schema";
@@ -478,6 +480,134 @@ function ResourceForm({ resource, states, onClose }: { resource: Resource | null
   );
 }
 
+function SiteSettingsForm() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load current settings
+  const { data: settings } = useQuery<Record<string, string>>({
+    queryKey: ["/api/site-settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/site-settings");
+      return res.json();
+    },
+  });
+
+  useEffect(() => {
+    if (settings?.site_hero_image) {
+      setHeroImageUrl(settings.site_hero_image);
+    }
+  }, [settings]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        const res = await fetch("/api/admin/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ data: base64, filename: file.name, mimeType: file.type }),
+        });
+        if (res.ok) {
+          const { url } = await res.json();
+          setHeroImageUrl(url);
+          toast({ title: "Image uploaded" });
+        } else {
+          toast({ title: "Upload failed", variant: "destructive" });
+        }
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      toast({ title: "Upload failed", variant: "destructive" });
+      setIsUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/admin/site-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ key: "site_hero_image", value: heroImageUrl }),
+      });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ["/api/site-settings"] });
+        toast({ title: "Hero image saved" });
+      } else {
+        toast({ title: "Failed to save", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Failed to save", variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="max-w-xl">
+      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <ImageIcon className="h-5 w-5" />
+        Home Page Hero Image
+      </h2>
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          {heroImageUrl && (
+            <div className="relative rounded-lg overflow-hidden border">
+              <img src={heroImageUrl} alt="Hero preview" className="w-full h-48 object-cover" />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label>Upload New Image</Label>
+            <div className="flex gap-2">
+              <label className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <Button type="button" variant="outline" className="w-full" disabled={isUploading} asChild>
+                  <span>
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isUploading ? "Uploading..." : "Choose Image"}
+                  </span>
+                </Button>
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="heroUrl">Or enter image URL</Label>
+            <Input
+              id="heroUrl"
+              value={heroImageUrl}
+              onChange={(e) => setHeroImageUrl(e.target.value)}
+              placeholder="/images/hero-boating.png"
+            />
+          </div>
+
+          <Button onClick={handleSave} disabled={isSaving} className="w-full">
+            {isSaving ? "Saving..." : "Save Hero Image"}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function ChangePasswordForm() {
   const { toast } = useToast();
   const [currentPassword, setCurrentPassword] = useState("");
@@ -885,7 +1015,9 @@ export default function Admin() {
           </div>
         </TabsContent>
 
-        <TabsContent value="settings" className="mt-6">
+        <TabsContent value="settings" className="mt-6 space-y-8">
+          <SiteSettingsForm />
+          <hr />
           <ChangePasswordForm />
         </TabsContent>
           </Tabs>

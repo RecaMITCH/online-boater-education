@@ -30,6 +30,16 @@ export default function Home() {
     queryKey: ["/api/articles", "recent"],
   });
 
+  const { data: siteSettings } = useQuery<Record<string, string>>({
+    queryKey: ["/api/site-settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/site-settings");
+      return res.json();
+    },
+  });
+
+  const heroImageUrl = siteSettings?.site_hero_image || "/images/hero-boating.png";
+
   const [searchQuery, setSearchQuery] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -64,7 +74,7 @@ export default function Home() {
       <section className="relative overflow-hidden" data-testid="section-hero">
         <div className="absolute inset-0">
           <img
-            src="/images/hero-boating.png"
+            src={heroImageUrl}
             alt="Water landscape"
             className="w-full h-full object-cover"
           />

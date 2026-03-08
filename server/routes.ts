@@ -4,6 +4,8 @@ import { storage } from "./storage";
 import { isAuthenticated, registerAuthRoutes } from "./auth";
 import { insertStateSchema, insertArticleSchema, insertResourceSchema } from "@shared/schema";
 import { ZodError } from "zod";
+import { sql } from "drizzle-orm";
+import { db } from "./db";
 
 function handleZodError(res: any, error: unknown) {
   if (error instanceof ZodError) {
@@ -286,6 +288,41 @@ Sitemap: https://www.onlineboatereducation.com/sitemap.xml`);
     res.sendStatus(204);
   });
 
+
+  // Site settings endpoints
+  app.get("/api/site-settings", async (_req, res) => {
+    try {
+      const result = await db.execute(
+        sql`SELECT key, value FROM admin_settings WHERE key LIKE 'site_%'`
+      );
+      const settings: Record<string, string> = {};
+      for (const row of result.rows as any[]) {
+        settings[row.key] = row.value;
+      }
+      res.json(settings);
+    } catch {
+      res.json({});
+    }
+  });
+
+  app.post("/api/admin/site-settings", isAuthenticated, async (req, res) => {
+    try {
+      const { key, value } = req.body;
+      if (!key || typeof key !== "string" || !key.startsWith("site_")) {
+        return res.status(400).json({ message: "Invalid setting key" });
+      }
+      await db.execute(sql`
+        INSERT INTO admin_settings (key, value, updated_at)
+        VALUES (${key}, ${value}, NOW())
+        ON CONFLICT (key)
+        DO UPDATE SET value = ${value}, updated_at = NOW()
+      `);
+      res.json({ message: "Setting saved" });
+    } catch (error: any) {
+      console.error("Error saving site setting:", error);
+      res.status(500).json({ message: "Failed to save setting" });
+    }
+  });
 
   // Image upload endpoint - accepts base64 JSON body
   const uploadDir = path.join(process.cwd(), "dist", "public", "uploads");
