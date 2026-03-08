@@ -60,6 +60,16 @@ export async function runMigrations() {
     )
   `);
 
+  // Admin settings table for password override
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS admin_settings (
+      id SERIAL PRIMARY KEY,
+      key TEXT NOT NULL UNIQUE,
+      value TEXT NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+
   // Migration v2: Update all state data with accurate requirements, agencies, and URLs
   console.log("Running state data accuracy updates (v2)...");
 

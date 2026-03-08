@@ -28,6 +28,8 @@ import {
   EyeOff,
   Link2,
   ExternalLink,
+  Settings,
+  KeyRound,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { State, Article, InsertState, InsertArticle, Resource, InsertResource } from "@shared/schema";
@@ -476,6 +478,102 @@ function ResourceForm({ resource, states, onClose }: { resource: Resource | null
   );
 }
 
+function ChangePasswordForm() {
+  const { toast } = useToast();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Error", description: "New passwords don't match", variant: "destructive" });
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast({ title: "Error", description: "Password must be at least 8 characters", variant: "destructive" });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/admin/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      if (response.ok) {
+        toast({ title: "Password changed successfully" });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        const data = await response.json();
+        toast({ title: "Error", description: data.message || "Failed to change password", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to change password", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-md">
+      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <KeyRound className="h-5 w-5" />
+        Change Admin Password
+      </h2>
+      <Card>
+        <CardContent className="pt-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Changing..." : "Change Password"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -578,6 +676,10 @@ export default function Admin() {
               <TabsTrigger value="resources" className="flex items-center gap-2">
                 <Link2 className="w-4 h-4" />
                 Resources ({resources?.length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Settings
               </TabsTrigger>
             </TabsList>
 
@@ -781,6 +883,10 @@ export default function Admin() {
               ))
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-6">
+          <ChangePasswordForm />
         </TabsContent>
           </Tabs>
         </div>
