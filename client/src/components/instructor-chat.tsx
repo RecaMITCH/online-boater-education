@@ -65,8 +65,11 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
 
   const addMessages = useCallback((...msgs: Omit<Message, "id">[]) => {
     const newMsgs = msgs.map((m) => ({ ...m, id: nextId() }));
-    // Track the first new message so we can scroll to it
-    scrollTargetIdRef.current = newMsgs[0].id;
+    // Only set scroll target if not already set — this keeps us at the TOP
+    // of the first response, even when follow-up messages (resources etc.) are added later
+    if (scrollTargetIdRef.current === null) {
+      scrollTargetIdRef.current = newMsgs[0].id;
+    }
     setMessages((prev) => [...prev, ...newMsgs]);
   }, []);
 
@@ -274,6 +277,7 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
   };
 
   const handleSelectState = (state: State, isResidence: boolean) => {
+    scrollTargetIdRef.current = null;
     addMessages({ role: "user", content: state.name });
 
     if (isResidence) {
@@ -291,56 +295,112 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
         });
       }, 400);
     } else {
-      setStep("show_results");
       const boatingState = state;
       const homeState = residenceState;
 
-      setTimeout(async () => {
-        if (homeState && homeState.id !== boatingState.id) {
+      // If boating in the same state as residence, use the same-state flow
+      if (homeState && homeState.id === boatingState.id) {
+        setStep("show_single_state");
+        setTimeout(async () => {
           addMessages(
             {
               role: "instructor",
-              content: `Here's what you need to know about boating in ${boatingState.name} while living in ${homeState.name}:`,
-            },
-            {
-              role: "instructor",
-              content: `Since NASBLA-approved certificates are recognized across most U.S. states, you have two main options:\n\n**Option 1:** Get certified in your home state (${homeState.name})  -- your NASBLA-approved certificate will typically be honored in the other state.\n\n**Option 2:** Get certified directly through the other state's program.`,
+              content: `Here's what you need to get certified in ${homeState.name}:`,
             },
             {
               role: "instructor",
               content: buildCertDescription(homeState),
               stateResult: homeState,
             },
-            {
-              role: "instructor",
-              content: buildCertDescription(boatingState),
-              stateResult: boatingState,
-            }
-
           );
-          const [homeRes, boatingRes] = await Promise.all([
-            fetchResources(homeState.id),
-            fetchResources(boatingState.id),
-          ]);
-          if (homeRes.length > 0) {
-            addMessages({ role: "instructor", content: `Official resources for ${homeState.name}:`, resources: homeRes });
+          const resources = await fetchResources(homeState.id);
+          if (resources.length > 0) {
+            addMessages({ role: "instructor", content: "Here are some helpful official resources:", resources });
           }
-          if (boatingRes.length > 0) {
-            addMessages({ role: "instructor", content: `Official resources for ${boatingState.name}:`, resources: boatingRes });
-          }
-          addMessages(
-            {
+          addMessages({
+            role: "instructor",
+            content: "Would you like to explore requirements for another state?",
+            options: [
+              { label: "Yes, another state", value: "another_state" },
+              { label: "Start over", value: "restart" },
+              { label: "That's all, thanks!", value: "done" },
+            ],
+          });
+        }, 400);
+      } else {
+        setStep("show_results");
+        setTimeout(async () => {
+          if (homeState) {
+            addMessages(
+              {
+                role: "instructor",
+                content: `Here's what you need to know about boating in ${boatingState.name} while living in ${homeState.name}:`,
+              },
+              {
+                role: "instructor",
+                content: `Since NASBLA-approved certificates are recognized across most U.S. states, you have two main options:\n\n**Option 1:** Get certified in your home state (${homeState.name})  -- your NASBLA-approved certificate will typically be honored in the other state.\n\n**Option 2:** Get certified directly through the other state's program.`,
+              },
+              {
+                role: "instructor",
+                content: buildCertDescription(homeState),
+                stateResult: homeState,
+              },
+              {
+                role: "instructor",
+                content: buildCertDescription(boatingState),
+                stateResult: boatingState,
+              }
+            );
+            const [homeRes, boatingRes] = await Promise.all([
+              fetchResources(homeState.id),
+              fetchResources(boatingState.id),
+            ]);
+            if (homeRes.length > 0) {
+              addMessages({ role: "instructor", content: `Official resources for ${homeState.name}:`, resources: homeRes });
+            }
+            if (boatingRes.length > 0) {
+              addMessages({ role: "instructor", content: `Official resources for ${boatingState.name}:`, resources: boatingRes });
+            }
+            addMessages(
+              {
+                role: "instructor",
+                content: "Either way, your NASBLA-approved certificate is typically valid nationwide. Would you like to explore another state?",
+                options: [
+                  { label: "Yes, another state", value: "another_state" },
+                  { label: "Start over", value: "restart" },
+                  { label: "That's all, thanks!", value: "done" },
+                ],
+              }
+            );
+          } else {
+            // No residence state set, just show boating state info
+            addMessages(
+              {
+                role: "instructor",
+                content: `Here are the requirements for ${boatingState.name}:`,
+              },
+              {
+                role: "instructor",
+                content: buildCertDescription(boatingState),
+                stateResult: boatingState,
+              },
+            );
+            const resources = await fetchResources(boatingState.id);
+            if (resources.length > 0) {
+              addMessages({ role: "instructor", content: `Official resources for ${boatingState.name}:`, resources });
+            }
+            addMessages({
               role: "instructor",
-              content: "Either way, your NASBLA-approved certificate is typically valid nationwide. Would you like to explore another state?",
+              content: "Would you like to explore another state?",
               options: [
                 { label: "Yes, another state", value: "another_state" },
                 { label: "Start over", value: "restart" },
                 { label: "That's all, thanks!", value: "done" },
               ],
-            }
-          );
-        }
-      }, 400);
+            });
+          }
+        }, 400);
+      }
     }
   };
 
@@ -553,6 +613,8 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
     const query = searchQuery.trim();
     if (!query) return;
     setSearchQuery("");
+    // Reset scroll target so the next instructor response scrolls to its top
+    scrollTargetIdRef.current = null;
 
     const vague = hasVagueReference(query);
 
@@ -718,6 +780,8 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
   };
 
   const handleOptionClick = (value: string) => {
+    // Reset scroll target so the next instructor response scrolls to its top
+    scrollTargetIdRef.current = null;
     if (
       value === "same" ||
       value === "different" ||
