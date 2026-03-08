@@ -46,6 +46,7 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollTargetIdRef = useRef<number | null>(null);
+  const hasScrolledThisTurnRef = useRef(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const { data: states } = useQuery<State[]>({
@@ -65,9 +66,9 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
 
   const addMessages = useCallback((...msgs: Omit<Message, "id">[]) => {
     const newMsgs = msgs.map((m) => ({ ...m, id: nextId() }));
-    // Only set scroll target if not already set — this keeps us at the TOP
+    // Only set scroll target once per turn — this keeps us at the TOP
     // of the first response, even when follow-up messages (resources etc.) are added later
-    if (scrollTargetIdRef.current === null) {
+    if (!hasScrolledThisTurnRef.current && scrollTargetIdRef.current === null) {
       scrollTargetIdRef.current = newMsgs[0].id;
     }
     setMessages((prev) => [...prev, ...newMsgs]);
@@ -83,6 +84,7 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
     if (scrollTargetIdRef.current !== null) {
       const targetId = scrollTargetIdRef.current;
       scrollTargetIdRef.current = null;
+      hasScrolledThisTurnRef.current = true;
       // Use a short delay to let the DOM render the new messages
       setTimeout(() => {
         const targetEl = document.querySelector(`[data-msg-id="${targetId}"]`);
@@ -278,6 +280,7 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
 
   const handleSelectState = (state: State, isResidence: boolean) => {
     scrollTargetIdRef.current = null;
+    hasScrolledThisTurnRef.current = false;
     addMessages({ role: "user", content: state.name });
 
     if (isResidence) {
@@ -613,8 +616,9 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
     const query = searchQuery.trim();
     if (!query) return;
     setSearchQuery("");
-    // Reset scroll target so the next instructor response scrolls to its top
+    // Reset scroll state so the next instructor response scrolls to its top
     scrollTargetIdRef.current = null;
+    hasScrolledThisTurnRef.current = false;
 
     const vague = hasVagueReference(query);
 
@@ -780,8 +784,9 @@ export function InstructorChat({ isOpen, onOpenChange }: InstructorChatProps) {
   };
 
   const handleOptionClick = (value: string) => {
-    // Reset scroll target so the next instructor response scrolls to its top
+    // Reset scroll state so the next instructor response scrolls to its top
     scrollTargetIdRef.current = null;
+    hasScrolledThisTurnRef.current = false;
     if (
       value === "same" ||
       value === "different" ||
