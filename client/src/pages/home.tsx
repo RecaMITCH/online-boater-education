@@ -18,8 +18,13 @@ import {
   Clock,
   MessageCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { InstructorChat } from "@/components/instructor-chat";
+
+const HERO_IMAGES = [
+  "/images/hero-boating.png",
+];
+const HERO_CYCLE_MS = 6000;
 
 export default function Home() {
   const { data: states, isLoading: statesLoading } = useQuery<State[]>({
@@ -38,7 +43,21 @@ export default function Home() {
     },
   });
 
-  const heroImageUrl = siteSettings?.site_hero_image || "/images/hero-boating.png";
+  const [activeHero, setActiveHero] = useState(0);
+
+  const heroImages = HERO_IMAGES.length > 1 ? HERO_IMAGES : [siteSettings?.site_hero_image || HERO_IMAGES[0]];
+
+  const advanceHero = useCallback(() => {
+    if (heroImages.length > 1) {
+      setActiveHero((prev) => (prev + 1) % heroImages.length);
+    }
+  }, [heroImages.length]);
+
+  useEffect(() => {
+    if (heroImages.length <= 1) return;
+    const timer = setInterval(advanceHero, HERO_CYCLE_MS);
+    return () => clearInterval(timer);
+  }, [advanceHero, heroImages.length]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
@@ -82,15 +101,19 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden" data-testid="section-hero">
         <div className="absolute inset-0">
-          <img
-            src={heroImageUrl}
-            alt="Water landscape"
-            className="w-full h-full object-cover"
-          />
+          {heroImages.map((src, i) => (
+            <img
+              key={src}
+              src={src}
+              alt="Boating on the water"
+              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out"
+              style={{ opacity: i === activeHero ? 1 : 0 }}
+            />
+          ))}
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:py-36">
+        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:py-24">
           <div className="max-w-2xl">
             <Badge variant="secondary" className="mb-4 bg-white/10 text-white border-white/20">
               Find NASBLA-Approved Courses
