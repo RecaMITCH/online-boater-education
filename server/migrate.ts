@@ -143,5 +143,87 @@ export async function runMigrations() {
 
   console.log("State data accuracy updates complete.");
 
+  // Migration v3: Seed official state agency boater education resources
+  console.log("Seeding official state agency resources (v3)...");
+
+  const officialResources = [
+    { slug: "alabama", title: "ALEA Marine Patrol – Boating Education", url: "https://www.alea.gov/dps/marine-patrol/boating-education-and-operator-certificationlicense", description: "Official Alabama boater education and certification information from the Alabama Law Enforcement Agency." },
+    { slug: "alaska", title: "Alaska DNR – Office of Boating Safety", url: "https://dnr.alaska.gov/parks/boating/", description: "Official Alaska boating safety education information from the Department of Natural Resources." },
+    { slug: "arizona", title: "AZGFD – Boating Education", url: "https://www.azgfd.com/education/boating-education/", description: "Official Arizona boating education requirements and courses from the Arizona Game and Fish Department." },
+    { slug: "arkansas", title: "AGFC – Boater Education", url: "https://www.agfc.com/education/boater-education/", description: "Official Arkansas boater education information from the Arkansas Game and Fish Commission." },
+    { slug: "california", title: "California DBW – Boating Safety & Education", url: "https://dbw.parks.ca.gov/?page_id=28711", description: "Official California boating safety and education information from the Division of Boating and Waterways." },
+    { slug: "colorado", title: "Colorado Parks & Wildlife – Boating Safety", url: "https://cpw.state.co.us/activities/boating/boating-safety", description: "Official Colorado boating safety education information from Colorado Parks and Wildlife." },
+    { slug: "connecticut", title: "CT DEEP – Boating Classes", url: "https://portal.ct.gov/DEEP/Boating/Education/Boating-Classes", description: "Official Connecticut boating education class information from the Department of Energy and Environmental Protection." },
+    { slug: "delaware", title: "Delaware DNREC – Boating Safety", url: "https://dnrec.delaware.gov/fish-wildlife/boating/safety/", description: "Official Delaware boating safety education information from DNREC." },
+    { slug: "florida", title: "Florida FWC – Boater Education", url: "https://myfwc.com/boating/safety-education/", description: "Official Florida boater education and safety information from the Fish and Wildlife Conservation Commission." },
+    { slug: "georgia", title: "Georgia DNR – Boating Education", url: "https://gadnrle.org/boating-education", description: "Official Georgia boating education information from the Department of Natural Resources." },
+    { slug: "hawaii", title: "Hawaii DOBOR – Boating Education", url: "https://dlnr.hawaii.gov/dobor/boating-in-hawaii/", description: "Official Hawaii boating education information from the Division of Boating and Ocean Recreation." },
+    { slug: "idaho", title: "Idaho Parks & Recreation – Boating Safety Classes", url: "https://parksandrecreation.idaho.gov/activities/boating/boating-safety-classes/", description: "Official Idaho boating safety class information from the Department of Parks and Recreation." },
+    { slug: "illinois", title: "Illinois DNR – Boating Safety Education", url: "https://dnr.illinois.gov/safety/boatingsafety.html", description: "Official Illinois boating safety education information from the Department of Natural Resources." },
+    { slug: "indiana", title: "Indiana DNR – Boating Education & Safety", url: "https://www.in.gov/dnr/law-enforcement/education/boating-education-and-safety/", description: "Official Indiana boating education and safety information from the Department of Natural Resources." },
+    { slug: "iowa", title: "Iowa DNR – Boater Education & Safety", url: "https://www.iowadnr.gov/things-do/boating/boater-education-safety", description: "Official Iowa boater education and safety information from the Department of Natural Resources." },
+    { slug: "kansas", title: "Kansas KDWP – Boating Education", url: "https://ksoutdoors.gov/Boating/Boating-Education", description: "Official Kansas boating education information from the Department of Wildlife and Parks." },
+    { slug: "kentucky", title: "Kentucky KDFWR – Boater Education", url: "https://fw.ky.gov/Boat/pages/boater-education.aspx", description: "Official Kentucky boater education information from the Department of Fish and Wildlife Resources." },
+    { slug: "louisiana", title: "Louisiana LDWF – Boater Education", url: "https://www.wlf.louisiana.gov/page/boater-education", description: "Official Louisiana mandatory boater education information from the Department of Wildlife and Fisheries." },
+    { slug: "maine", title: "Maine DIFW – Boating Safety Course", url: "https://www.maine.gov/ifw/programs-resources/educational-programs/safety-courses/boating-safety.html", description: "Official Maine boating safety education course information from the Department of Inland Fisheries and Wildlife." },
+    { slug: "maryland", title: "Maryland DNR – Boating Safety Certificate", url: "https://dnr.maryland.gov/nrp/pages/boatingsafety/safety_certificate.aspx", description: "Official Maryland boating safety certificate information from the Department of Natural Resources." },
+    { slug: "massachusetts", title: "Massachusetts – Boat Safety Certificate Course", url: "https://www.mass.gov/how-to/boat-safety-certificate-course", description: "Official Massachusetts boat safety certificate course information from Mass.gov." },
+    { slug: "michigan", title: "Michigan DNR – Boating Safety Certificate", url: "https://www.michigan.gov/dnr/things-to-do/boating/safety-certificate", description: "Official Michigan boating safety certificate information from the Department of Natural Resources." },
+    { slug: "minnesota", title: "Minnesota DNR – Boat & Water Safety Education", url: "https://www.dnr.state.mn.us/safety/boatwater/education.html", description: "Official Minnesota boat and water safety education information from the Department of Natural Resources." },
+    { slug: "mississippi", title: "Mississippi MDWFP – Boater Education", url: "https://www.mdwfp.com/enforcement-education/boater-education", description: "Official Mississippi boater education information from the Department of Wildlife, Fisheries, and Parks." },
+    { slug: "missouri", title: "Missouri MSHP – Boater Education Course", url: "https://www.mshp.dps.missouri.gov/MSHPWeb/WaterPatrol/BoatingLaws_Education/requiredBoaterEdCourse.html", description: "Official Missouri boater education course requirements from the State Highway Patrol Water Patrol." },
+    { slug: "montana", title: "Montana FWP – Boating Education", url: "https://fwp.mt.gov/activities/boating/education", description: "Official Montana boating education information from Fish, Wildlife and Parks." },
+    { slug: "nebraska", title: "Nebraska Game & Parks – Boater Education", url: "https://outdoornebraska.gov/parks/go-boating/boater-education/", description: "Official Nebraska boater education information from the Game and Parks Commission." },
+    { slug: "nevada", title: "Nevada NDOW – Boating Education", url: "https://www.ndow.org/events/boating-education/", description: "Official Nevada boating education information from the Department of Wildlife." },
+    { slug: "new-hampshire", title: "NH State Police Marine Patrol – Boating Education", url: "https://www.nhsp.dos.nh.gov/our-services/field-operations-bureau/marine-patrol/boating-education", description: "Official New Hampshire boating education information from the State Police Marine Patrol." },
+    { slug: "new-jersey", title: "NJ State Police – Boating Safety Course", url: "https://www.nj.gov/njsp/marine-services/bsc-course-locations.shtml", description: "Official New Jersey boating safety course information from the State Police Marine Services Bureau." },
+    { slug: "new-mexico", title: "New Mexico State Parks – Boating Education", url: "https://www.emnrd.nm.gov/spd/activities/boating-2/boating-education/", description: "Official New Mexico boating education information from the State Parks Division." },
+    { slug: "new-york", title: "NYS Parks – Boating Education", url: "https://parks.ny.gov/activities/boating/boating-education", description: "Official New York boating education information from the Office of Parks, Recreation and Historic Preservation." },
+    { slug: "north-carolina", title: "NC Wildlife – Boating Education Courses", url: "https://www.ncwildlife.gov/education/boating-education-courses", description: "Official North Carolina boating education course information from the Wildlife Resources Commission." },
+    { slug: "north-dakota", title: "North Dakota Game & Fish – Boating Education", url: "https://gf.nd.gov/education/boating", description: "Official North Dakota boating and water safety education information from the Game and Fish Department." },
+    { slug: "ohio", title: "Ohio ODNR – Boater Education Requirements", url: "https://ohiodnr.gov/discover-and-learn/education-training/boater-education-skills/1-meeting-boater-ed-requirements", description: "Official Ohio boater education requirements from the Department of Natural Resources." },
+    { slug: "oklahoma", title: "Oklahoma DPS – Boating Education", url: "https://oklahoma.gov/dps/programs-services/boated.html", description: "Official Oklahoma boating education information from the Department of Public Safety." },
+    { slug: "oregon", title: "Oregon State Marine Board – Boater Education", url: "https://www.oregon.gov/osmb/boater-info/Pages/Boater-Education-Cards.aspx", description: "Official Oregon boater education card information from the State Marine Board." },
+    { slug: "pennsylvania", title: "PA Fish & Boat Commission – Boating Safety Education", url: "https://www.pa.gov/services/fishandboat/apply-for-bsec-and-safety-courses", description: "Official Pennsylvania boating safety education certificate and course information." },
+    { slug: "rhode-island", title: "Rhode Island DEM – Boating Safety Certification", url: "https://dem.ri.gov/natural-resources-bureau/law-enforcement/boating-safety-certification", description: "Official Rhode Island boating safety certification information from the Department of Environmental Management." },
+    { slug: "south-carolina", title: "SC DNR – Boater Education", url: "https://www.dnr.sc.gov/education/boated.html", description: "Official South Carolina boater education information from the Department of Natural Resources." },
+    { slug: "south-dakota", title: "South Dakota GFP – Boating Safety", url: "https://gfp.sd.gov/safety/", description: "Official South Dakota boating safety information from Game, Fish and Parks." },
+    { slug: "tennessee", title: "Tennessee TWRA – Boating Education", url: "https://www.tn.gov/twra/boating/boating-education.html", description: "Official Tennessee boating education information from the Wildlife Resources Agency." },
+    { slug: "texas", title: "Texas TPWD – Boater Education", url: "https://tpwd.texas.gov/education/boater-education/", description: "Official Texas boater education information from the Parks and Wildlife Department." },
+    { slug: "utah", title: "Utah DOR – Boating Education", url: "https://recreation.utah.gov/boating-education/", description: "Official Utah boating education information from the Division of Outdoor Recreation." },
+    { slug: "vermont", title: "Vermont Fish & Wildlife – Boating", url: "https://www.vtfishandwildlife.com/fish/boating-in-vermont", description: "Official Vermont boating information from the Fish and Wildlife Department." },
+    { slug: "virginia", title: "Virginia DWR – Boating Safety & Education", url: "https://dwr.virginia.gov/boating/boating-safety/", description: "Official Virginia boating safety and education information from the Department of Wildlife Resources." },
+    { slug: "washington", title: "Washington State Parks – Boater Education & Safety", url: "https://parks.wa.gov/about/rules-and-safety/boater-education-safety", description: "Official Washington boater education and safety information from State Parks." },
+    { slug: "west-virginia", title: "West Virginia DNR – Boater Education", url: "https://wvdnr.gov/boater-education/", description: "Official West Virginia boating safety education information from the Division of Natural Resources." },
+    { slug: "wisconsin", title: "Wisconsin DNR – Safety Education", url: "https://dnr.wisconsin.gov/Education/OutdoorSkills/safetyEducation", description: "Official Wisconsin boating safety education information from the Department of Natural Resources." },
+    { slug: "wyoming", title: "Wyoming Game & Fish – Boating & Watercraft", url: "https://wgfd.wyo.gov/fishing-boating/boating-watercraft", description: "Official Wyoming boating and watercraft information from the Game and Fish Department." },
+  ];
+
+  for (const r of officialResources) {
+    // Look up state ID by slug
+    const stateRow = await db.execute(sql`SELECT id FROM states WHERE slug = ${r.slug}`);
+    const stateId = (stateRow.rows[0] as any)?.id;
+    if (!stateId) {
+      console.log(`  Skipping ${r.slug} — state not found`);
+      continue;
+    }
+
+    // Only insert if no resource with this URL already exists for this state
+    const existing = await db.execute(
+      sql`SELECT id FROM resources WHERE state_id = ${stateId} AND url = ${r.url}`
+    );
+    if (existing.rows.length > 0) {
+      continue; // Already seeded
+    }
+
+    await db.execute(sql`
+      INSERT INTO resources (state_id, title, url, description, resource_type, is_active, created_at, updated_at)
+      VALUES (${stateId}, ${r.title}, ${r.url}, ${r.description}, 'official_state_page', true, NOW(), NOW())
+    `);
+    console.log(`  ✓ ${r.title}`);
+  }
+
+  console.log("Official state agency resources seeded.");
+
   console.log("Database migrations complete.");
 }
