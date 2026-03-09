@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { StateCard } from "@/components/state-card";
 import { SEO } from "@/components/seo";
-import { Search } from "lucide-react";
+import { Search, ChevronRight } from "lucide-react";
 import type { State } from "@shared/schema";
 
 export default function StatesList() {
@@ -25,11 +26,19 @@ export default function StatesList() {
   return (
     <div className="min-h-screen">
       <SEO
-        title="Find Your State - Online Boater Education"
-        description="Browse all available states and find your boater education course requirements."
+        title="Online Boater Education by State | Find Your State-Approved Course"
+        description="Browse all U.S. states to find NASBLA-approved online boater education courses. View requirements, costs, and certification paths for your state."
+        canonical="https://www.onlineboatereducation.com/states"
       />
       <section className="bg-card border-b py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted-foreground">
+            <ol className="flex items-center gap-1">
+              <li><Link href="/" className="hover:text-foreground transition-colors">Home</Link></li>
+              <li><ChevronRight className="h-3 w-3" /></li>
+              <li className="text-foreground font-medium">Find Your State</li>
+            </ol>
+          </nav>
           <h1 className="font-serif text-3xl font-bold sm:text-4xl" data-testid="text-states-title">
             Find Your State
           </h1>

@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEO } from "@/components/seo";
-import { Clock, ArrowRight } from "lucide-react";
+import { Clock, ArrowRight, ChevronRight } from "lucide-react";
 import type { Article } from "@shared/schema";
 
 export default function BlogList() {
@@ -14,11 +14,19 @@ export default function BlogList() {
   return (
     <div className="min-h-screen">
       <SEO
-        title="Boater Education Blog - Tips, Guides & Resources"
-        description="Expert tips, guides, and resources for boater education. Stay informed about safety practices and certification requirements."
+        title="Boating Safety Blog | Tips, Guides & Resources"
+        description="Expert tips, guides, and resources for boater education. Stay informed about boating safety practices, state requirements, and certification updates."
+        canonical="https://www.onlineboatereducation.com/blog"
       />
       <section className="bg-card border-b py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted-foreground">
+            <ol className="flex items-center gap-1">
+              <li><Link href="/" className="hover:text-foreground transition-colors">Home</Link></li>
+              <li><ChevronRight className="h-3 w-3" /></li>
+              <li className="text-foreground font-medium">Blog</li>
+            </ol>
+          </nav>
           <h1 className="font-serif text-3xl font-bold sm:text-4xl" data-testid="text-blog-title">
             Blog & Articles
           </h1>

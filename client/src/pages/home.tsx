@@ -53,22 +53,31 @@ export default function Home() {
   return (
     <div className="min-h-screen">
         <SEO
-          title="Online Boater Education - Find NASBLA-Approved Courses"
-          description="Find NASBLA-approved online boater education courses for your state. Get certified from home and boat legally across the U.S. with a nationally recognized certificate."
+          title="Online Boater Education | State-Approved Boating Safety Courses"
+          description="Complete your boater education course online. State-approved, NASBLA-certified boating safety courses for all 50 states. Get certified at your own pace."
           canonical="https://www.onlineboatereducation.com"
           ogType="website"
-          structuredData={{
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "name": "Online Boater Ed",
-            "url": "https://www.onlineboatereducation.com",
-            "description": "Find NASBLA-approved online boater education courses for every U.S. state.",
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": "https://www.onlineboatereducation.com/states?q={search_term}",
-              "query-input": "required name=search_term"
+          structuredData={[
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Online Boater Education",
+              "url": "https://www.onlineboatereducation.com",
+              "description": "State-approved online boating safety courses. NASBLA certified.",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.onlineboatereducation.com/states/{search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Online Boater Education",
+              "url": "https://www.onlineboatereducation.com",
+              "description": "State-approved online boater education and boating safety certification courses."
             }
-          }}
+          ]}
         />
       {/* Hero Section */}
       <section className="relative overflow-hidden" data-testid="section-hero">

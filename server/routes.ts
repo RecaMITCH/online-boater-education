@@ -51,6 +51,18 @@ Sitemap: https://www.onlineboatereducation.com/sitemap.xml`);
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <lastmod>${now}</lastmod>
+  </url>
+  <url>
+    <loc>https://www.onlineboatereducation.com/states</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <lastmod>${now}</lastmod>
+  </url>
+  <url>
+    <loc>https://www.onlineboatereducation.com/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>${now}</lastmod>
   </url>`;
 
       for (const state of states) {
@@ -66,10 +78,10 @@ Sitemap: https://www.onlineboatereducation.com/sitemap.xml`);
       for (const article of articles) {
         xml += `
   <url>
-    <loc>https://www.onlineboatereducation.com/articles/${article.slug}</loc>
+    <loc>https://www.onlineboatereducation.com/blog/${article.slug}</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-    <lastmod>${now}</lastmod>
+    <lastmod>${article.updatedAt ? new Date(article.updatedAt).toISOString().split("T")[0] : now}</lastmod>
   </url>`;
       }
 

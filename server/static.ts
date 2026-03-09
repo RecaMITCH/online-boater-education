@@ -12,7 +12,7 @@ function injectMetaTags(html: string, meta: {
   description: string;
   canonical: string;
   ogImage?: string;
-  structuredData?: object;
+  structuredData?: object | object[];
 }): string {
   // Build meta tags to inject before </head>
   let tags = `
@@ -35,8 +35,11 @@ function injectMetaTags(html: string, meta: {
   }
 
   if (meta.structuredData) {
-    tags += `
-    <script type="application/ld+json">${JSON.stringify(meta.structuredData)}</script>`;
+    const items = Array.isArray(meta.structuredData) ? meta.structuredData : [meta.structuredData];
+    for (const item of items) {
+      tags += `
+    <script type="application/ld+json">${JSON.stringify(item)}</script>`;
+    }
   }
 
   html = html.replace("</head>", tags + "\n  </head>");
@@ -93,8 +96,36 @@ export function serveStatic(app: Express) {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 
-  
+
   app.use(express.static(distPath));
+
+  // SEO: Server-side meta tag injection for states list
+  app.get("/states", async (_req, res) => {
+    try {
+      const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+
+      const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Find Your State" }
+        ]
+      };
+
+      const enriched = injectMetaTags(indexHtml, {
+        title: "Online Boater Education by State | Find Your State-Approved Course",
+        description: "Browse all U.S. states to find NASBLA-approved online boater education courses. View requirements, costs, and certification paths for your state.",
+        canonical: "https://www.onlineboatereducation.com/states",
+        structuredData: [breadcrumbSchema]
+      });
+
+      return res.send(enriched);
+    } catch (error) {
+      console.error("Error injecting states list SEO:", error);
+    }
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
 
   // SEO: Server-side meta tag injection for state pages
   app.get("/states/:slug", async (req, res) => {
@@ -103,7 +134,7 @@ export function serveStatic(app: Express) {
       const state = await storage.getStateBySlug(req.params.slug);
 
       if (state) {
-        const title = state.metaTitle || `${state.name} Online Boater Education Course | OnlineBoaterEducation.com`;
+        const title = state.metaTitle || `${state.name} Boater Education Course Online | State-Approved`;
         const description = state.metaDescription || state.description;
         const canonical = `https://www.onlineboatereducation.com/states/${state.slug}`;
 
@@ -170,11 +201,22 @@ export function serveStatic(app: Express) {
           "mainEntity": faqs
         };
 
+        const breadcrumbSchema = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Find Your State", "item": "https://www.onlineboatereducation.com/states" },
+            { "@type": "ListItem", "position": 3, "name": state.name }
+          ]
+        };
+
         const enriched = injectMetaTags(indexHtml, {
           title,
           description,
           canonical,
-          structuredData: [structuredData, faqSchema]
+          ogImage: state.heroImageUrl || undefined,
+          structuredData: [structuredData, faqSchema, breadcrumbSchema]
         });
 
         return res.send(enriched);
@@ -184,6 +226,91 @@ export function serveStatic(app: Express) {
     }
 
     // Fallback to regular index.html
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
+  // SEO: Server-side meta tag injection for blog list
+  app.get("/blog", async (_req, res) => {
+    try {
+      const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+
+      const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Blog" }
+        ]
+      };
+
+      const enriched = injectMetaTags(indexHtml, {
+        title: "Boating Safety Blog | Tips, Guides & Resources | Online Boater Ed",
+        description: "Expert tips, guides, and resources for boater education. Stay informed about boating safety practices, state requirements, and certification updates.",
+        canonical: "https://www.onlineboatereducation.com/blog",
+        structuredData: [breadcrumbSchema]
+      });
+
+      return res.send(enriched);
+    } catch (error) {
+      console.error("Error injecting blog list SEO:", error);
+    }
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
+  // SEO: Server-side meta tag injection for blog detail
+  app.get("/blog/:slug", async (req, res) => {
+    try {
+      const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+      const article = await storage.getArticleBySlug(req.params.slug);
+
+      if (article) {
+        const title = article.metaTitle || article.title;
+        const description = article.metaDescription || article.excerpt || "";
+        const canonical = `https://www.onlineboatereducation.com/blog/${article.slug}`;
+
+        const articleSchema = {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": article.title,
+          "description": description,
+          "url": canonical,
+          "datePublished": article.publishedAt ? new Date(article.publishedAt).toISOString() : undefined,
+          "dateModified": article.updatedAt ? new Date(article.updatedAt).toISOString() : undefined,
+          "image": article.coverImageUrl || undefined,
+          "publisher": {
+            "@type": "Organization",
+            "name": "Online Boater Education",
+            "url": "https://www.onlineboatereducation.com"
+          },
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": canonical
+          }
+        };
+
+        const breadcrumbSchema = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.onlineboatereducation.com/blog" },
+            { "@type": "ListItem", "position": 3, "name": article.title }
+          ]
+        };
+
+        const enriched = injectMetaTags(indexHtml, {
+          title,
+          description,
+          canonical,
+          ogImage: article.coverImageUrl || undefined,
+          structuredData: [articleSchema, breadcrumbSchema]
+        });
+
+        return res.send(enriched);
+      }
+    } catch (error) {
+      console.error("Error injecting blog detail SEO:", error);
+    }
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 

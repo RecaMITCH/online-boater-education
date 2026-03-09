@@ -17,6 +17,7 @@ import {
   FileText,
   Info,
   Globe,
+  ChevronRight,
 } from "lucide-react";
 import type { State } from "@shared/schema";
 import { useEffect } from "react";
@@ -83,41 +84,71 @@ export default function StateDetail() {
   return (
     <div className="min-h-screen">
       <SEO
-            title={state.metaTitle || `${state.name} Boater Education - Online Boater Ed`}
+            title={state.metaTitle || `${state.name} Boater Education Course Online | State-Approved`}
             description={state.metaDescription || `Find NASBLA-approved online boater education courses for ${state.name}. Learn about requirements, costs, and certification paths.`}
             canonical={`https://www.onlineboatereducation.com/states/${state.slug}`}
-            structuredData={{
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              "mainEntity": [
-                {
-                  "@type": "Question",
-                  "name": `How do I get my boater education certificate in ${state.name}?`,
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": state.fieldDayRequired
-                      ? `In ${state.name}, you need to complete an online course and attend an on-water practical assessment.`
-                      : `In ${state.name}, you can complete the entire course online with no in-person assessment required.`
-                  }
+            ogImage={state.heroImageUrl || undefined}
+            structuredData={[
+              {
+                "@context": "https://schema.org",
+                "@type": "Course",
+                "name": `${state.name} Online Boater Education Course`,
+                "description": state.description,
+                "provider": {
+                  "@type": "Organization",
+                  "name": "OnlineBoaterEducation.com",
+                  "url": "https://www.onlineboatereducation.com"
                 },
-                {
-                  "@type": "Question",
-                  "name": `How much does boater education cost in ${state.name}?`,
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": state.coursePrice ? `The online course typically costs around ${state.coursePrice}.` : "Course pricing varies by provider. Visit the official course page for current pricing."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "Is the certificate valid in other states?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Yes. NASBLA-approved certificates are reciprocal across most U.S. states."
-                  }
+                "url": `https://www.onlineboatereducation.com/states/${state.slug}`,
+                "educationalCredentialAwarded": `${state.name} Boater Education Certificate`,
+                "hasCourseInstance": {
+                  "@type": "CourseInstance",
+                  "courseMode": "online",
+                  "courseWorkload": "PT4H"
                 }
-              ]
-            }}
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": [
+                  {
+                    "@type": "Question",
+                    "name": `How do I get my boater education certificate in ${state.name}?`,
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": state.fieldDayRequired
+                        ? `In ${state.name}, you need to complete an online course and attend an on-water practical assessment.`
+                        : `In ${state.name}, you can complete the entire course online with no in-person assessment required.`
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": `How much does boater education cost in ${state.name}?`,
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": state.coursePrice ? `The online course typically costs around ${state.coursePrice}.` : "Course pricing varies by provider. Visit the official course page for current pricing."
+                    }
+                  },
+                  {
+                    "@type": "Question",
+                    "name": "Is the certificate valid in other states?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": "Yes. NASBLA-approved certificates are reciprocal across most U.S. states."
+                    }
+                  }
+                ]
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                  { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
+                  { "@type": "ListItem", "position": 2, "name": "Find Your State", "item": "https://www.onlineboatereducation.com/states" },
+                  { "@type": "ListItem", "position": 3, "name": state.name }
+                ]
+              }
+            ]}
           />
       {/* Hero */}
       <section className="relative overflow-hidden" data-testid="section-state-hero">
@@ -131,12 +162,15 @@ export default function StateDetail() {
         </div>
 
         <div className="relative mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-20">
-          <Link href="/states">
-            <Button variant="ghost" size="sm" className="text-white/70 hover:text-white mb-4 -ml-2" data-testid="button-back-states">
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              All States
-            </Button>
-          </Link>
+          <nav aria-label="Breadcrumb" className="mb-4 text-sm">
+            <ol className="flex items-center gap-1 text-white/70">
+              <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
+              <li><ChevronRight className="h-3 w-3" /></li>
+              <li><Link href="/states" className="hover:text-white transition-colors">States</Link></li>
+              <li><ChevronRight className="h-3 w-3" /></li>
+              <li className="text-white font-medium">{state.name}</li>
+            </ol>
+          </nav>
 
           <div className="flex items-start gap-3 flex-wrap">
             <h1 className="font-serif text-3xl font-bold text-white sm:text-4xl lg:text-5xl" data-testid="text-state-name">
