@@ -34,6 +34,18 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 
+User-agent: GPTBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
 Sitemap: https://www.onlineboatereducation.com/sitemap.xml`);
   });
 
