@@ -425,7 +425,7 @@ export default function StateDetail() {
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold text-lg mb-2">What is a boating license?</h3>
                 <p className="text-muted-foreground">
-                  While many people refer to it as a "boating license," there is technically no such thing. What most states actually issue is a <strong>boater education card</strong> or <strong>boating safety certificate</strong>. This card proves you've completed a state-approved boating safety course. Unlike a driver's license, it never expires and doesn't require renewal — once you earn your boater education certificate in {state.name}, it's yours for life.
+                  While many people refer to it as a "boating license," what most states actually issue is a <strong>boater education card</strong> or <strong>boating safety certificate</strong>. This card proves you've completed a state-approved boating safety course. Unlike a driver's license, it never expires and doesn't require renewal — once you earn your boater education certificate in {state.name}, it's yours for life.
                 </p>
               </div>
 
