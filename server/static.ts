@@ -64,11 +64,11 @@ export function serveStatic(app: Express) {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Online Boater Education",
-        "url": "https://www.onlineboatereducation.com",
+        "url": "https://onlineboatereducation.com",
         "description": "State-approved online boating safety courses. NASBLA certified. Complete your boater education certification online at your own pace.",
         "potentialAction": {
           "@type": "SearchAction",
-          "target": "https://www.onlineboatereducation.com/states/{search_term_string}",
+          "target": "https://onlineboatereducation.com/states/{search_term_string}",
           "query-input": "required name=search_term_string"
         }
       };
@@ -77,14 +77,18 @@ export function serveStatic(app: Express) {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "Online Boater Education",
-        "url": "https://www.onlineboatereducation.com",
-        "description": "State-approved online boater education and boating safety certification courses."
+        "url": "https://onlineboatereducation.com",
+        "description": "Online Boater Education is a free resource helping boaters in all 50 states find NASBLA-approved, state-approved boating safety courses online.",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer support"
+        }
       };
 
       const enriched = injectMetaTags(indexHtml, {
-        title: "Online Boater Education | State-Approved Boating Safety Courses | OnlineBoaterEducation.com",
-        description: "Complete your boater education course online. State-approved, NASBLA certified boating safety courses available for all 50 states. Get certified at your own pace.",
-        canonical: "https://www.onlineboatereducation.com/",
+        title: "Online Boater Education | State-Approved Boating Safety Courses",
+        description: "Online Boater Education helps boaters in all 50 states find NASBLA-approved, state-approved boating safety courses online. Find your state's requirements, approved providers, and get certified.",
+        canonical: "https://onlineboatereducation.com/",
         structuredData: [structuredData, orgSchema]
       });
 
@@ -108,15 +112,15 @@ export function serveStatic(app: Express) {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
           { "@type": "ListItem", "position": 2, "name": "Find Your State" }
         ]
       };
 
       const enriched = injectMetaTags(indexHtml, {
-        title: "Online Boater Education by State | Find Your State-Approved Course",
-        description: "Browse all U.S. states to find NASBLA-approved online boater education courses. View requirements, costs, and certification paths for your state.",
-        canonical: "https://www.onlineboatereducation.com/states",
+        title: "Boater Education Requirements by State | All 50 States",
+        description: "Browse boater education requirements for all 50 U.S. states. Find NASBLA-approved online courses, age requirements, vessel rules, and approved providers by state.",
+        canonical: "https://onlineboatereducation.com/states",
         structuredData: [breadcrumbSchema]
       });
 
@@ -135,18 +139,19 @@ export function serveStatic(app: Express) {
 
       if (state) {
         const title = state.metaTitle || `${state.name} Boater Education Course Online | State-Approved`;
-        const description = state.metaDescription || state.description;
-        const canonical = `https://www.onlineboatereducation.com/states/${state.slug}`;
+        const metaDesc = state.metaDescription || `Get your ${state.name} Boater Education Certificate online. ${state.agencyAbbreviation || state.agencyName}-approved and NASBLA-approved courses available. Learn requirements, vessel rules, costs, and how to get certified in ${state.name}.`;
+        const schemaDescription = state.metaDescription || state.description;
+        const canonical = `https://onlineboatereducation.com/states/${state.slug}`;
 
         const structuredData = {
           "@context": "https://schema.org",
           "@type": "Course",
           "name": `${state.name} Online Boater Education Course`,
-          "description": description,
+          "description": schemaDescription,
           "provider": {
             "@type": "Organization",
             "name": "OnlineBoaterEducation.com",
-            "url": "https://www.onlineboatereducation.com"
+            "url": "https://onlineboatereducation.com"
           },
           "url": canonical,
           "coursePrerequisites": state.minimumAge ? `Minimum age: ${state.minimumAge}` : undefined,
@@ -205,15 +210,15 @@ export function serveStatic(app: Express) {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Find Your State", "item": "https://www.onlineboatereducation.com/states" },
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Find Your State", "item": "https://onlineboatereducation.com/states" },
             { "@type": "ListItem", "position": 3, "name": state.name }
           ]
         };
 
         const enriched = injectMetaTags(indexHtml, {
           title,
-          description,
+          description: metaDesc,
           canonical,
           ogImage: state.heroImageUrl || undefined,
           structuredData: [structuredData, faqSchema, breadcrumbSchema]
@@ -238,7 +243,7 @@ export function serveStatic(app: Express) {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
           { "@type": "ListItem", "position": 2, "name": "Blog" }
         ]
       };
@@ -246,7 +251,7 @@ export function serveStatic(app: Express) {
       const enriched = injectMetaTags(indexHtml, {
         title: "Boating Safety Blog | Tips, Guides & Resources | Online Boater Ed",
         description: "Expert tips, guides, and resources for boater education. Stay informed about boating safety practices, state requirements, and certification updates.",
-        canonical: "https://www.onlineboatereducation.com/blog",
+        canonical: "https://onlineboatereducation.com/blog",
         structuredData: [breadcrumbSchema]
       });
 
@@ -266,7 +271,7 @@ export function serveStatic(app: Express) {
       if (article) {
         const title = article.metaTitle || article.title;
         const description = article.metaDescription || article.excerpt || "";
-        const canonical = `https://www.onlineboatereducation.com/blog/${article.slug}`;
+        const canonical = `https://onlineboatereducation.com/blog/${article.slug}`;
 
         const articleSchema = {
           "@context": "https://schema.org",
@@ -280,7 +285,7 @@ export function serveStatic(app: Express) {
           "publisher": {
             "@type": "Organization",
             "name": "Online Boater Education",
-            "url": "https://www.onlineboatereducation.com"
+            "url": "https://onlineboatereducation.com"
           },
           "mainEntityOfPage": {
             "@type": "WebPage",
@@ -292,8 +297,8 @@ export function serveStatic(app: Express) {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.onlineboatereducation.com/blog" },
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://onlineboatereducation.com/blog" },
             { "@type": "ListItem", "position": 3, "name": article.title }
           ]
         };
@@ -310,6 +315,34 @@ export function serveStatic(app: Express) {
       }
     } catch (error) {
       console.error("Error injecting blog detail SEO:", error);
+    }
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
+  // SEO: Server-side meta tag injection for about page
+  app.get("/about", async (_req, res) => {
+    try {
+      const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+
+      const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
+          { "@type": "ListItem", "position": 2, "name": "About" }
+        ]
+      };
+
+      const enriched = injectMetaTags(indexHtml, {
+        title: "About Online Boater Education | Our Mission & Team",
+        description: "Learn about OnlineBoaterEducation.com — a free resource helping boaters in all 50 states find NASBLA-approved, state-approved boating safety courses and certification information.",
+        canonical: "https://onlineboatereducation.com/about",
+        structuredData: [breadcrumbSchema]
+      });
+
+      return res.send(enriched);
+    } catch (error) {
+      console.error("Error injecting about SEO:", error);
     }
     res.sendFile(path.resolve(distPath, "index.html"));
   });

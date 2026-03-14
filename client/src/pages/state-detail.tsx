@@ -85,8 +85,8 @@ export default function StateDetail() {
     <div className="min-h-screen">
       <SEO
             title={state.metaTitle || `${state.name} Boater Education Course Online | State-Approved`}
-            description={state.metaDescription || `Find NASBLA-approved online boater education courses for ${state.name}. Learn about requirements, costs, and certification paths.`}
-            canonical={`https://www.onlineboatereducation.com/states/${state.slug}`}
+            description={state.metaDescription || `Get your ${state.name} Boater Education Certificate online. ${state.agencyAbbreviation || state.agencyName}-approved and NASBLA-approved courses available. Learn requirements, vessel rules, costs, and how to get certified in ${state.name}.`}
+            canonical={`https://onlineboatereducation.com/states/${state.slug}`}
             ogImage={state.heroImageUrl || undefined}
             structuredData={[
               {
@@ -97,9 +97,9 @@ export default function StateDetail() {
                 "provider": {
                   "@type": "Organization",
                   "name": "OnlineBoaterEducation.com",
-                  "url": "https://www.onlineboatereducation.com"
+                  "url": "https://onlineboatereducation.com"
                 },
-                "url": `https://www.onlineboatereducation.com/states/${state.slug}`,
+                "url": `https://onlineboatereducation.com/states/${state.slug}`,
                 "educationalCredentialAwarded": `${state.name} Boater Education Certificate`,
                 "hasCourseInstance": {
                   "@type": "CourseInstance",
@@ -143,8 +143,8 @@ export default function StateDetail() {
                 "@context": "https://schema.org",
                 "@type": "BreadcrumbList",
                 "itemListElement": [
-                  { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
-                  { "@type": "ListItem", "position": 2, "name": "Find Your State", "item": "https://www.onlineboatereducation.com/states" },
+                  { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
+                  { "@type": "ListItem", "position": 2, "name": "Find Your State", "item": "https://onlineboatereducation.com/states" },
                   { "@type": "ListItem", "position": 3, "name": state.name }
                 ]
               }
@@ -367,6 +367,14 @@ export default function StateDetail() {
                 </p>
               </CardContent>
             </Card>
+          )}
+
+          {/* Extended Content */}
+          {state.extendedContent && (
+            <div
+              className="mt-8 prose prose-neutral dark:prose-invert max-w-none prose-headings:font-serif prose-a:text-primary"
+              dangerouslySetInnerHTML={{ __html: state.extendedContent }}
+            />
           )}
 
           {/* Resources Section */

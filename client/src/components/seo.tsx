@@ -11,7 +11,7 @@ interface SEOProps {
 
 export function SEO({ title, description, canonical, ogImage, ogType = "website", structuredData }: SEOProps) {
   useEffect(() => {
-    document.title = title + " | Online Boater Ed";
+    document.title = title;
 
     // Meta description
     let metaDesc = document.querySelector('meta[name="description"]');

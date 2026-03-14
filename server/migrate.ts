@@ -225,5 +225,122 @@ export async function runMigrations() {
 
   console.log("Official state agency resources seeded.");
 
+  // Migration v4: Add extended_content column and seed expanded content for TX, CA, NY
+  console.log("Running extended content migration (v4)...");
+
+  await db.execute(sql`
+    ALTER TABLE states ADD COLUMN IF NOT EXISTS extended_content TEXT
+  `);
+
+  // Custom meta descriptions for high-traffic states
+  const metaDescriptions: Record<string, string> = {
+    "texas": "Get your Texas Boater Education Certificate online. TPWD-approved and NASBLA-certified. Required for anyone born on or after September 1, 1993. Learn requirements, costs, and how to get certified in Texas.",
+    "california": "Get your California Boater Education Card online. DBW-approved and NASBLA-certified. Required for ALL motorized vessel operators as of 2025. Learn requirements, costs, and how to get your California Boating Card.",
+    "new-york": "Get your New York Boating Safety Certificate online. NYS Parks-approved and NASBLA-certified. Required for ALL motorized vessel operators. Learn requirements, costs, and how to get certified in New York.",
+    "florida": "Get your Florida Boater Education Certificate online. FWC-approved and NASBLA-certified. Required for anyone born on or after January 1, 1988. Learn requirements, costs, and how to get certified in Florida."
+  };
+
+  for (const [slug, metaDesc] of Object.entries(metaDescriptions)) {
+    await db.execute(sql`
+      UPDATE states SET meta_description = ${metaDesc}
+      WHERE slug = ${slug} AND meta_description IS NULL
+    `);
+  }
+
+  // Extended content for Texas
+  await db.execute(sql`
+    UPDATE states SET extended_content = ${`
+<h2>Texas Boater Education: What You Need to Know</h2>
+<p>Texas law requires anyone born on or after <strong>September 1, 1993</strong>, to complete a boater education course before operating a motorized vessel on Texas waterways. The course must be approved by the <strong>Texas Parks and Wildlife Department (TPWD)</strong> and meet NASBLA standards.</p>
+
+<h3>Who Needs a Texas Boater Education Certificate?</h3>
+<ul>
+  <li>Anyone born on or after September 1, 1993, who operates a motorized vessel</li>
+  <li>Anyone operating a personal watercraft (PWC/jet ski) regardless of birth date</li>
+  <li>Minimum age of 13 to take the course</li>
+</ul>
+
+<h3>What Does the Course Cover?</h3>
+<p>The Texas boater education course covers vessel operation safety, navigation rules, state-specific boating laws, emergency procedures, and environmental responsibility. Topics include Texas-specific rules about no-wake zones, required safety equipment, and the legal blood alcohol limit for boating (0.08% BAC).</p>
+
+<h3>How Long Does It Take?</h3>
+<p>The online course typically takes 4-6 hours to complete and can be done at your own pace. You can save your progress and return at any time. The course concludes with a proctored final exam that you must pass to receive your certificate.</p>
+
+<h3>Texas Boating Laws at a Glance</h3>
+<ul>
+  <li><strong>Life jackets:</strong> Required for children under 13 on any vessel under 26 feet while underway</li>
+  <li><strong>BUI limit:</strong> 0.08% BAC — same as driving</li>
+  <li><strong>PWC hours:</strong> PWCs may not be operated between 30 minutes after sunset and 30 minutes before sunrise</li>
+  <li><strong>Registration:</strong> All motorboats and sailboats over 14 feet must be registered with TPWD</li>
+</ul>
+`}
+    WHERE slug = 'texas'
+  `);
+
+  // Extended content for California
+  await db.execute(sql`
+    UPDATE states SET extended_content = ${`
+<h2>California Boater Education: What You Need to Know</h2>
+<p>As of <strong>January 1, 2025</strong>, California requires <strong>ALL operators of motorized vessels</strong> to carry a California Boater Card. This law was phased in over several years starting in 2018 and is now fully in effect for all ages. The course must be approved by the <strong>California Division of Boating and Waterways (DBW)</strong>.</p>
+
+<h3>Who Needs a California Boater Card?</h3>
+<ul>
+  <li>All operators of motorized recreational vessels on California waterways</li>
+  <li>No age exemptions — the requirement applies to everyone as of 2025</li>
+  <li>The California Boater Card does not expire and is valid for life</li>
+</ul>
+
+<h3>What Does the Course Cover?</h3>
+<p>The California boater education course covers boat handling, navigation rules, California-specific waterway regulations, safety equipment requirements, and environmental stewardship. It includes California-specific topics like kelp bed navigation, marine mammal protection laws, and coastal boating considerations.</p>
+
+<h3>How Long Does It Take?</h3>
+<p>The online course takes approximately 3-4 hours and can be completed at your own pace. After passing the final exam, you can print a temporary card immediately. Your permanent California Boater Card will be mailed to you.</p>
+
+<h3>California Boating Laws at a Glance</h3>
+<ul>
+  <li><strong>Life jackets:</strong> Required for children under 13 on any vessel and for all PWC operators</li>
+  <li><strong>BUI limit:</strong> 0.08% BAC for boaters age 21+; 0.01% for boaters under 21</li>
+  <li><strong>Speed limits:</strong> 5 mph within 200 feet of shore, swimmers, or docks (most areas)</li>
+  <li><strong>Mufflers:</strong> All motorboats must have functioning mufflers</li>
+  <li><strong>Marine Protected Areas:</strong> Numerous MPAs along the California coast with specific regulations</li>
+</ul>
+`}
+    WHERE slug = 'california'
+  `);
+
+  // Extended content for New York
+  await db.execute(sql`
+    UPDATE states SET extended_content = ${`
+<h2>New York Boater Education: What You Need to Know</h2>
+<p>As of <strong>January 1, 2025</strong>, New York requires <strong>ALL operators of motorized vessels</strong> to hold a Boating Safety Certificate. This requirement was phased in over several years and now applies to all ages. The course must be approved by <strong>New York State Parks, Recreation and Historic Preservation</strong>.</p>
+
+<h3>Who Needs a New York Boating Safety Certificate?</h3>
+<ul>
+  <li>All operators of motorized vessels on New York waterways</li>
+  <li>All operators of personal watercraft (PWC/jet ski)</li>
+  <li>Minimum age of 10 to take the course (operators under 18 have restrictions)</li>
+  <li>The certificate does not expire</li>
+</ul>
+
+<h3>What Does the Course Cover?</h3>
+<p>The New York boating safety course covers vessel types and handling, navigation rules specific to New York waterways, required safety equipment, emergency procedures, and New York boating laws. It includes information about operating on the Hudson River, Great Lakes, Long Island Sound, and the state's extensive inland waterway system.</p>
+
+<h3>How Long Does It Take?</h3>
+<p>The online course typically takes 6-8 hours and can be completed at your own pace. You'll need to pass a final exam to receive your certificate. The certificate is mailed to you after successful completion.</p>
+
+<h3>New York Boating Laws at a Glance</h3>
+<ul>
+  <li><strong>Life jackets:</strong> Required for children under 12 on vessels under 65 feet and for all PWC operators</li>
+  <li><strong>BUI limit:</strong> 0.08% BAC; 0.02% for operators under 21</li>
+  <li><strong>PWC age:</strong> Must be at least 14 to operate a PWC</li>
+  <li><strong>Registration:</strong> All motorized vessels must be registered with the NY DMV</li>
+  <li><strong>No-wake zones:</strong> 5 mph within 100 feet of shore, docks, piers, or anchored vessels</li>
+</ul>
+`}
+    WHERE slug = 'new-york'
+  `);
+
+  console.log("Extended content migration complete.");
+
   console.log("Database migrations complete.");
 }

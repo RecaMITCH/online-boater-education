@@ -73,19 +73,19 @@ export default function Home() {
     <div className="min-h-screen">
         <SEO
           title="Online Boater Education | State-Approved Boating Safety Courses"
-          description="Complete your boater education course online. State-approved, NASBLA-certified boating safety courses for all 50 states. Get certified at your own pace."
-          canonical="https://www.onlineboatereducation.com"
+          description="Online Boater Education helps boaters in all 50 states find NASBLA-approved, state-approved boating safety courses online. Find your state's requirements, approved providers, and get certified."
+          canonical="https://onlineboatereducation.com"
           ogType="website"
           structuredData={[
             {
               "@context": "https://schema.org",
               "@type": "WebSite",
               "name": "Online Boater Education",
-              "url": "https://www.onlineboatereducation.com",
+              "url": "https://onlineboatereducation.com",
               "description": "State-approved online boating safety courses. NASBLA certified.",
               "potentialAction": {
                 "@type": "SearchAction",
-                "target": "https://www.onlineboatereducation.com/states/{search_term_string}",
+                "target": "https://onlineboatereducation.com/states/{search_term_string}",
                 "query-input": "required name=search_term_string"
               }
             },
@@ -93,7 +93,7 @@ export default function Home() {
               "@context": "https://schema.org",
               "@type": "Organization",
               "name": "Online Boater Education",
-              "url": "https://www.onlineboatereducation.com",
+              "url": "https://onlineboatereducation.com",
               "description": "State-approved online boater education and boating safety certification courses."
             }
           ]}

@@ -14,6 +14,7 @@ export function SiteHeader() {
     { href: "/", label: "Home" },
     { href: "/states", label: "Find Your State" },
     { href: "/blog", label: "Blog" },
+    { href: "/about", label: "About" },
   ];
 
   const isActive = (href: string) => {

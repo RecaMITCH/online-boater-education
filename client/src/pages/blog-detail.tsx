@@ -58,7 +58,7 @@ export default function BlogDetail() {
     );
   }
 
-  const canonicalUrl = `https://www.onlineboatereducation.com/blog/${article.slug}`;
+  const canonicalUrl = `https://onlineboatereducation.com/blog/${article.slug}`;
 
   return (
     <div className="min-h-screen">
@@ -81,7 +81,7 @@ export default function BlogDetail() {
             "publisher": {
               "@type": "Organization",
               "name": "Online Boater Education",
-              "url": "https://www.onlineboatereducation.com"
+              "url": "https://onlineboatereducation.com"
             },
             "mainEntityOfPage": {
               "@type": "WebPage",
@@ -92,8 +92,8 @@ export default function BlogDetail() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.onlineboatereducation.com/" },
-              { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://www.onlineboatereducation.com/blog" },
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://onlineboatereducation.com/blog" },
               { "@type": "ListItem", "position": 3, "name": article.title }
             ]
           }

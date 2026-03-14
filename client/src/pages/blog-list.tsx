@@ -14,9 +14,9 @@ export default function BlogList() {
   return (
     <div className="min-h-screen">
       <SEO
-        title="Boating Safety Blog | Tips, Guides & Resources"
-        description="Expert tips, guides, and resources for boater education. Stay informed about boating safety practices, state requirements, and certification updates."
-        canonical="https://www.onlineboatereducation.com/blog"
+        title="Boating Safety Blog | Tips, Guides & Resources | Online Boater Ed"
+        description="Expert boating safety tips, state-by-state requirement guides, and certification resources. Stay informed about boater education practices and updates."
+        canonical="https://onlineboatereducation.com/blog"
       />
       <section className="bg-card border-b py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">

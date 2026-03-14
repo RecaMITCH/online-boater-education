@@ -29,6 +29,19 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false }));
 
+// Canonical domain: onlineboatereducation.com (non-www)
+// 301 redirect www → non-www to consolidate link equity and avoid duplicate content
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    const host = req.hostname || req.headers.host || "";
+    if (host.startsWith("www.")) {
+      const newUrl = `https://onlineboatereducation.com${req.originalUrl}`;
+      return res.redirect(301, newUrl);
+    }
+    next();
+  });
+}
+
 // Session middleware for admin auth
 const SessionStore = MemoryStore(session);
 app.use(

@@ -22,6 +22,7 @@ export const states = pgTable("states", {
   coursePrice: text("course_price"),
   additionalRequirements: text("additional_requirements"),
   importantNotes: text("important_notes"),
+  extendedContent: text("extended_content"),
   isActive: boolean("is_active").notNull().default(true),
 });
 

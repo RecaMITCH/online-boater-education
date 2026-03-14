@@ -46,7 +46,7 @@ Allow: /
 User-agent: GoogleOther
 Allow: /
 
-Sitemap: https://www.onlineboatereducation.com/sitemap.xml`);
+Sitemap: https://onlineboatereducation.com/sitemap.xml`);
   });
 
   // SEO: sitemap.xml
@@ -59,28 +59,34 @@ Sitemap: https://www.onlineboatereducation.com/sitemap.xml`);
       let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.onlineboatereducation.com/</loc>
+    <loc>https://onlineboatereducation.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <lastmod>${now}</lastmod>
   </url>
   <url>
-    <loc>https://www.onlineboatereducation.com/states</loc>
+    <loc>https://onlineboatereducation.com/states</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <lastmod>${now}</lastmod>
   </url>
   <url>
-    <loc>https://www.onlineboatereducation.com/blog</loc>
+    <loc>https://onlineboatereducation.com/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+    <lastmod>${now}</lastmod>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
     <lastmod>${now}</lastmod>
   </url>`;
 
       for (const state of states) {
         xml += `
   <url>
-    <loc>https://www.onlineboatereducation.com/states/${state.slug}</loc>
+    <loc>https://onlineboatereducation.com/states/${state.slug}</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <lastmod>${now}</lastmod>
@@ -90,7 +96,7 @@ Sitemap: https://www.onlineboatereducation.com/sitemap.xml`);
       for (const article of articles) {
         xml += `
   <url>
-    <loc>https://www.onlineboatereducation.com/blog/${article.slug}</loc>
+    <loc>https://onlineboatereducation.com/blog/${article.slug}</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <lastmod>${article.updatedAt ? new Date(article.updatedAt).toISOString().split("T")[0] : now}</lastmod>

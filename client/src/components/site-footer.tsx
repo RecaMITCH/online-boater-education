@@ -34,6 +34,11 @@ export function SiteFooter() {
                   Blog
                 </Link>
               </li>
+              <li>
+                <Link href="/about" className="text-sm text-muted-foreground transition-colors" data-testid="link-footer-about">
+                  About
+                </Link>
+              </li>
             </ul>
           </div>
 

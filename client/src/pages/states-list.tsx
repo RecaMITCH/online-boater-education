@@ -26,9 +26,9 @@ export default function StatesList() {
   return (
     <div className="min-h-screen">
       <SEO
-        title="Online Boater Education by State | Find Your State-Approved Course"
-        description="Browse all U.S. states to find NASBLA-approved online boater education courses. View requirements, costs, and certification paths for your state."
-        canonical="https://www.onlineboatereducation.com/states"
+        title="Boater Education Requirements by State | All 50 States"
+        description="Browse boater education requirements for all 50 U.S. states. Find NASBLA-approved online courses, age requirements, vessel rules, and approved providers by state."
+        canonical="https://onlineboatereducation.com/states"
       />
       <section className="bg-card border-b py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
