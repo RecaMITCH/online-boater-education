@@ -113,6 +113,14 @@ export default function StateDetail() {
                 "mainEntity": [
                   {
                     "@type": "Question",
+                    "name": "What is a boating license?",
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": `While many people refer to it as a "boating license," what most states actually issue is a boater education card or boating safety certificate. This card proves you've completed a state-approved boating safety course. Unlike a driver's license, it never expires and doesn't require renewal — once you earn your boater education certificate in ${state.name}, it's yours for life.`
+                    }
+                  },
+                  {
+                    "@type": "Question",
                     "name": `How do I get my boater education certificate in ${state.name}?`,
                     "acceptedAnswer": {
                       "@type": "Answer",
@@ -414,6 +422,13 @@ export default function StateDetail() {
           <div className="mt-12 mb-8">
             <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
             <div className="space-y-4">
+              <div className="border rounded-lg p-4">
+                <h3 className="font-semibold text-lg mb-2">What is a boating license?</h3>
+                <p className="text-muted-foreground">
+                  While many people refer to it as a "boating license," there is technically no such thing. What most states actually issue is a <strong>boater education card</strong> or <strong>boating safety certificate</strong>. This card proves you've completed a state-approved boating safety course. Unlike a driver's license, it never expires and doesn't require renewal — once you earn your boater education certificate in {state.name}, it's yours for life.
+                </p>
+              </div>
+
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold text-lg mb-2">How do I get my boater education certificate in {state.name}?</h3>
                 <p className="text-muted-foreground">
