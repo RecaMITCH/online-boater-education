@@ -55,6 +55,7 @@ export const articles = pgTable("articles", {
   authorId: varchar("author_id"),
   isPublished: boolean("is_published").notNull().default(false),
   publishedAt: timestamp("published_at"),
+  sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

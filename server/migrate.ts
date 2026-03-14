@@ -345,6 +345,11 @@ export async function runMigrations() {
 
   console.log("Extended content migration complete.");
 
+  // Migration v5.1: Add sort_order column to articles
+  await db.execute(sql`
+    ALTER TABLE articles ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0
+  `);
+
   // Migration v5: Seed comprehensive content for all 50 states + blog articles
   console.log("Running content seeding (v5)...");
   await seedAllStatesContent(db);

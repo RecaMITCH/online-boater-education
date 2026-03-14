@@ -277,6 +277,20 @@ Sitemap: https://onlineboatereducation.com/sitemap.xml`);
     }
   });
 
+  app.post("/api/admin/articles/reorder", isAuthenticated, async (req, res) => {
+    try {
+      const { orderedIds } = req.body;
+      if (!Array.isArray(orderedIds)) {
+        return res.status(400).json({ message: "orderedIds must be an array" });
+      }
+      await storage.reorderArticles(orderedIds);
+      res.json({ message: "Articles reordered" });
+    } catch (error) {
+      console.error("Error reordering articles:", error);
+      res.status(500).json({ message: "Failed to reorder articles" });
+    }
+  });
+
   // Resource admin CRUD
   app.get("/api/admin/resources", isAuthenticated, async (_req, res) => {
     const resources = await storage.getResources();

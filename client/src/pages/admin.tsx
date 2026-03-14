@@ -33,7 +33,9 @@ import {
   ImageIcon,
   Upload,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { Reorder, useDragControls } from "framer-motion";
+import { GripVertical } from "lucide-react";
 import type { State, Article, InsertState, InsertArticle, Resource, InsertResource } from "@shared/schema";
 
 function StateForm({
@@ -754,6 +756,32 @@ export default function Admin() {
     },
   });
 
+  const reorderArticlesMutation = useMutation({
+    mutationFn: (orderedIds: number[]) =>
+      apiRequest("POST", "/api/admin/articles/reorder", { orderedIds }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error reordering", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const [articleOrder, setArticleOrder] = useState<Article[]>([]);
+
+  useEffect(() => {
+    if (articles) setArticleOrder(articles);
+  }, [articles]);
+
+  const handleArticleReorder = useCallback(
+    (newOrder: Article[]) => {
+      setArticleOrder(newOrder);
+      reorderArticlesMutation.mutate(newOrder.map((a) => a.id));
+    },
+    [reorderArticlesMutation]
+  );
+
   const deleteResourceMutation = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("DELETE", `/api/admin/resources/${id}`);
@@ -916,52 +944,59 @@ export default function Admin() {
                     <Skeleton key={i} className="h-20 w-full" />
                   ))}
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {articles?.map((article: any) => (
-                    <Card key={article.id} className="overflow-hidden">
-                      <div className="flex items-center p-4 gap-4">
-                        {article.coverImageUrl && (
-                          <img
-                            src={article.coverImageUrl}
-                            alt=""
-                            className="w-20 h-14 object-cover rounded"
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold truncate">{article.title}</h3>
-                          <p className="text-sm text-gray-500 truncate">/blog/{article.slug}</p>
+              ) : articleOrder.length > 0 ? (
+                <Reorder.Group
+                  axis="y"
+                  values={articleOrder}
+                  onReorder={handleArticleReorder}
+                  className="space-y-3"
+                >
+                  {articleOrder.map((article: Article) => (
+                    <Reorder.Item key={article.id} value={article} className="list-none">
+                      <Card className="overflow-hidden cursor-grab active:cursor-grabbing">
+                        <div className="flex items-center p-4 gap-4">
+                          <GripVertical className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                          {article.coverImageUrl && (
+                            <img
+                              src={article.coverImageUrl}
+                              alt=""
+                              className="w-20 h-14 object-cover rounded flex-shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold truncate">{article.title}</h3>
+                            <p className="text-sm text-gray-500 truncate">/blog/{article.slug}</p>
+                          </div>
+                          <Badge variant={article.isPublished ? "default" : "secondary"}>
+                            {article.isPublished ? "Published" : "Draft"}
+                          </Badge>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.location.href = '/admin/blog/' + article.id}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm('Delete "' + article.title + '"?')) {
+                                  deleteArticleMutation.mutate(article.id);
+                                }
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </div>
-                        <Badge variant={article.isPublished ? "default" : "secondary"}>
-                          {article.isPublished ? "Published" : "Draft"}
-                        </Badge>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.location.href = '/admin/blog/' + article.id}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              if (confirm('Delete "' + article.title + '"?')) {
-                                deleteArticleMutation.mutate(article.id);
-                              }
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
+                      </Card>
+                    </Reorder.Item>
                   ))}
-                  {(!articles || articles.length === 0) && (
-                    <p className="text-center text-gray-500 py-8">No articles yet. Create your first one!</p>
-                  )}
-                </div>
+                </Reorder.Group>
+              ) : (
+                <p className="text-center text-gray-500 py-8">No articles yet. Create your first one!</p>
               )}
             </TabsContent>
 

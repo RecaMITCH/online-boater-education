@@ -1,4 +1,4 @@
-import { eq, desc, and, or, isNull } from "drizzle-orm";
+import { eq, desc, asc, and, or, isNull, sql } from "drizzle-orm";
 import { db } from "./db";
 import {
   states,
@@ -70,7 +70,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getArticles(): Promise<Article[]> {
-    return db.select().from(articles).orderBy(desc(articles.createdAt));
+    return db.select().from(articles).orderBy(asc(articles.sortOrder), desc(articles.createdAt));
   }
 
   async getPublishedArticles(): Promise<Article[]> {
@@ -78,7 +78,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(articles)
       .where(eq(articles.isPublished, true))
-      .orderBy(desc(articles.publishedAt));
+      .orderBy(asc(articles.sortOrder), desc(articles.publishedAt));
   }
 
   async getRecentPublishedArticles(limit: number): Promise<Article[]> {
@@ -86,8 +86,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(articles)
       .where(eq(articles.isPublished, true))
-      .orderBy(desc(articles.publishedAt))
+      .orderBy(asc(articles.sortOrder), desc(articles.publishedAt))
       .limit(limit);
+  }
+
+  async reorderArticles(orderedIds: number[]): Promise<void> {
+    for (let i = 0; i < orderedIds.length; i++) {
+      await db.update(articles).set({ sortOrder: i }).where(eq(articles.id, orderedIds[i]));
+    }
   }
 
   async getArticleBySlug(slug: string): Promise<Article | undefined> {
