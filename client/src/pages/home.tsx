@@ -62,6 +62,8 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
 
+  const activeStates = states?.filter((s) => s.isActive) || [];
+
   const filteredStates = states?.filter(
     (s) =>
       s.isActive &&
@@ -355,6 +357,31 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      {/* Crawlable All-States Directory */}
+      {activeStates.length > 0 && (
+        <section className="py-12 sm:py-16 border-t">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <h2 className="font-serif text-xl font-bold sm:text-2xl mb-2">
+              Boater Education Courses by State
+            </h2>
+            <p className="text-muted-foreground text-sm mb-6">
+              Browse online boater education requirements and NASBLA-approved courses for every state.
+            </p>
+            <div className="columns-2 sm:columns-3 lg:columns-4 gap-x-6">
+              {activeStates.map((state) => (
+                <Link
+                  key={state.id}
+                  href={`/states/${state.slug}`}
+                  className="block py-1 text-sm hover:text-primary transition-colors"
+                >
+                  {state.name} Boater Education
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <InstructorChat isOpen={chatOpen} onOpenChange={setChatOpen} />
     </div>
