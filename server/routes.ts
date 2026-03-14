@@ -136,8 +136,17 @@ Sitemap: https://onlineboatereducation.com/sitemap.xml`);
 
   app.get("/api/articles/recent", async (_req, res) => {
     try {
-      const articles = await storage.getRecentPublishedArticles(3);
-      res.json(articles);
+      // Return featured articles first; fall back to recent if fewer than 6 featured
+      const featured = await storage.getFeaturedArticles(6);
+      if (featured.length >= 6) {
+        return res.json(featured);
+      }
+      // Fill remaining slots with recent non-featured articles
+      const recent = await storage.getRecentPublishedArticles(6);
+      const featuredIds = new Set(featured.map(a => a.id));
+      const filler = recent.filter(a => !featuredIds.has(a.id));
+      const combined = [...featured, ...filler].slice(0, 6);
+      res.json(combined);
     } catch (error) {
       console.error("Error fetching recent articles:", error);
       res.status(500).json({ message: "Failed to fetch recent articles" });

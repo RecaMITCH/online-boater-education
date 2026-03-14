@@ -310,7 +310,7 @@ export default function Home() {
             </div>
           ) : articles && articles.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {articles.slice(0, 3).map((article) => (
+              {articles.slice(0, 6).map((article) => (
                 <Link key={article.id} href={`/blog/${article.slug}`}>
                   <Card className="group hover-elevate active-elevate-2 cursor-pointer h-full" data-testid={`card-article-${article.slug}`}>
                 <CardContent className="p-0">

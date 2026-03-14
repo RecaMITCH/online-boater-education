@@ -56,6 +56,7 @@ export const articles = pgTable("articles", {
   isPublished: boolean("is_published").notNull().default(false),
   publishedAt: timestamp("published_at"),
   sortOrder: integer("sort_order").notNull().default(0),
+  isFeatured: boolean("is_featured").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

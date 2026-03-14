@@ -90,6 +90,15 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
+  async getFeaturedArticles(limit: number): Promise<Article[]> {
+    return db
+      .select()
+      .from(articles)
+      .where(and(eq(articles.isPublished, true), eq(articles.isFeatured, true)))
+      .orderBy(asc(articles.sortOrder), desc(articles.publishedAt))
+      .limit(limit);
+  }
+
   async reorderArticles(orderedIds: number[]): Promise<void> {
     for (let i = 0; i < orderedIds.length; i++) {
       await db.update(articles).set({ sortOrder: i }).where(eq(articles.id, orderedIds[i]));

@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { Reorder, useDragControls } from "framer-motion";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Star } from "lucide-react";
 import type { State, Article, InsertState, InsertArticle, Resource, InsertResource } from "@shared/schema";
 
 function StateForm({
@@ -774,6 +774,15 @@ export default function Admin() {
     if (articles) setArticleOrder(articles);
   }, [articles]);
 
+  const toggleFeaturedMutation = useMutation({
+    mutationFn: ({ id, isFeatured }: { id: number; isFeatured: boolean }) =>
+      apiRequest("PATCH", `/api/admin/articles/${id}`, { isFeatured }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/articles"] });
+    },
+  });
+
   const handleArticleReorder = useCallback(
     (newOrder: Article[]) => {
       setArticleOrder(newOrder);
@@ -970,6 +979,17 @@ export default function Admin() {
                           <Badge variant={article.isPublished ? "default" : "secondary"}>
                             {article.isPublished ? "Published" : "Draft"}
                           </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title={article.isFeatured ? "Remove from homepage" : "Feature on homepage"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFeaturedMutation.mutate({ id: article.id, isFeatured: !article.isFeatured });
+                            }}
+                          >
+                            <Star className={`h-4 w-4 ${article.isFeatured ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
+                          </Button>
                           <div className="flex gap-2">
                             <Button
                               variant="outline"

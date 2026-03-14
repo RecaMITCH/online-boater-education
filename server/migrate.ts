@@ -345,9 +345,12 @@ export async function runMigrations() {
 
   console.log("Extended content migration complete.");
 
-  // Migration v5.1: Add sort_order column to articles
+  // Migration v5.1: Add sort_order and is_featured columns to articles
   await db.execute(sql`
     ALTER TABLE articles ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0
+  `);
+  await db.execute(sql`
+    ALTER TABLE articles ADD COLUMN IF NOT EXISTS is_featured BOOLEAN NOT NULL DEFAULT false
   `);
 
   // Migration v5: Seed comprehensive content for all 50 states + blog articles
