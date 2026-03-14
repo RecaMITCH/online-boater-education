@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { seedAllStatesContent } from "./seed-state-content";
 import { seedCoreArticles } from "./seed-articles";
 import { seedStateGuideArticles } from "./seed-state-guides";
+import { seedArticleImages } from "./seed-images";
 
 export async function runMigrations() {
   console.log("Running database migrations...");
@@ -358,6 +359,7 @@ export async function runMigrations() {
   await seedAllStatesContent(db);
   await seedCoreArticles(db);
   await seedStateGuideArticles(db);
+  await seedArticleImages(db);
   console.log("Content seeding complete.");
 
   console.log("Database migrations complete.");
