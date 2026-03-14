@@ -24,6 +24,7 @@ import { InstructorChat } from "@/components/instructor-chat";
 const HERO_VIDEOS = [
   "/images/hero-boating-1.mp4",
   "/images/hero-boating-2.mp4",
+  "/images/hero-boating-3.mp4",
 ];
 
 export default function Home() {
