@@ -31,65 +31,51 @@ export async function registerRoutes(
   app.get("/robots.txt", (_req, res) => {
     res.type("text/plain").send(`User-agent: *
 Allow: /
-Disallow: /api/
-Disallow: /admin/
-
-User-agent: GPTBot
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: GoogleOther
-Allow: /
 
 Sitemap: https://onlineboatereducation.com/sitemap.xml`);
   });
 
-  // SEO: sitemap.xml
+  // SEO: sitemap.xml — dynamically generated from database
   app.get("/sitemap.xml", async (_req, res) => {
     try {
       const states = await storage.getActiveStates();
       const articles = await storage.getPublishedArticles();
-      const now = new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().split("T")[0];
 
       let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://onlineboatereducation.com/</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <lastmod>${now}</lastmod>
   </url>
   <url>
     <loc>https://onlineboatereducation.com/states</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <lastmod>${now}</lastmod>
   </url>
   <url>
     <loc>https://onlineboatereducation.com/blog</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <lastmod>${now}</lastmod>
   </url>
   <url>
     <loc>https://onlineboatereducation.com/about</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
-    <lastmod>${now}</lastmod>
   </url>`;
 
       for (const state of states) {
         xml += `
   <url>
     <loc>https://onlineboatereducation.com/states/${state.slug}</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <lastmod>${now}</lastmod>
   </url>`;
       }
 
@@ -97,9 +83,9 @@ Sitemap: https://onlineboatereducation.com/sitemap.xml`);
         xml += `
   <url>
     <loc>https://onlineboatereducation.com/blog/${article.slug}</loc>
-    <changefreq>monthly</changefreq>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.6</priority>
-    <lastmod>${article.updatedAt ? new Date(article.updatedAt).toISOString().split("T")[0] : now}</lastmod>
   </url>`;
       }
 
