@@ -18,8 +18,13 @@ import {
   Clock,
   MessageCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { InstructorChat } from "@/components/instructor-chat";
+
+const HERO_VIDEOS = [
+  "/images/hero-boating-1.mp4",
+  "/images/hero-boating-2.mp4",
+];
 
 export default function Home() {
   const { data: states, isLoading: statesLoading } = useQuery<State[]>({
@@ -29,6 +34,15 @@ export default function Home() {
   const { data: articles, isLoading: articlesLoading } = useQuery<Article[]>({
     queryKey: ["/api/articles", "recent"],
   });
+
+  const [activeVideo, setActiveVideo] = useState(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  const handleVideoEnded = useCallback(() => {
+    const next = (activeVideo + 1) % HERO_VIDEOS.length;
+    setActiveVideo(next);
+    videoRefs.current[next]?.play();
+  }, [activeVideo]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
@@ -74,16 +88,20 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden" data-testid="section-hero">
         <div className="absolute inset-0">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster="/images/hero-boating.png"
-            className="absolute inset-0 w-full h-full object-cover"
-          >
-            <source src="/images/hero-boating.mp4" type="video/mp4" />
-          </video>
+          {HERO_VIDEOS.map((src, i) => (
+            <video
+              key={src}
+              ref={(el) => { videoRefs.current[i] = el; }}
+              autoPlay={i === 0}
+              muted
+              playsInline
+              onEnded={i === activeVideo ? handleVideoEnded : undefined}
+              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+              style={{ opacity: i === activeVideo ? 1 : 0 }}
+            >
+              <source src={src} type="video/mp4" />
+            </video>
+          ))}
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
         </div>
 
