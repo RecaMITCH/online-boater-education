@@ -347,6 +347,54 @@ export function serveStatic(app: Express) {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 
+  // SEO: Server-side meta tag injection for quiz page
+  app.get("/quiz", async (_req, res) => {
+    try {
+      const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+
+      const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Do I Need a Boating License?" }
+        ]
+      };
+
+      const webAppSchema = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Do I Need a Boating License? Quiz",
+        "url": "https://onlineboatereducation.com/quiz",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "All",
+        "description": "Free interactive tool to determine if you need boater education and find the best course option for your state and age.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      };
+
+      const enriched = injectMetaTags(indexHtml, {
+        title: "Do I Need a Boating License? Free Quiz Tool | Online Boater Ed",
+        description: "Answer 2 quick questions to find out if you need boater education, what course format to take, and whether you can complete it online in your state.",
+        canonical: "https://onlineboatereducation.com/quiz",
+        structuredData: [breadcrumbSchema, webAppSchema]
+      });
+
+      return res.send(enriched);
+    } catch (error) {
+      console.error("Error injecting quiz SEO:", error);
+    }
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
+  // Embed routes - serve index.html without header/footer injection
+  app.get("/embed/quiz", async (_req, res) => {
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
   // fall through to index.html if the file doesn't exist
   app.use("/{*path}", (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));

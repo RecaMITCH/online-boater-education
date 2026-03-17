@@ -1,9 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300">
-  <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0f2b3c"/><stop offset="100%" style="stop-color:#1a4a5e"/></linearGradient></defs>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f2b3c"/>
+      <stop offset="100%" style="stop-color:#1a4a5e"/>
+    </linearGradient>
+  </defs>
   <rect width="900" height="300" fill="url(#bg)"/>
   <path d="M0 220 Q150 190 300 220 T600 220 T900 220 V300 H0Z" fill="#2c7da0" opacity="0.12"/>
   <path d="M0 240 Q150 210 300 240 T600 240 T900 240 V300 H0Z" fill="#2c7da0" opacity="0.15"/>
-  <path d="M370 70 Q410 40 450 70 T530 70" fill="none" stroke="white" stroke-opacity="0.15" stroke-width="4"/><path d="M370 95 Q410 65 450 95 T530 95" fill="none" stroke="white" stroke-opacity="0.10" stroke-width="3"/><path d="M380 120 Q420 90 460 120 T540 120" fill="none" stroke="white" stroke-opacity="0.07" stroke-width="2"/>
+  <path d="M0 260 Q150 230 300 260 T600 260 T900 260 V300 H0Z" fill="#2c7da0" opacity="0.10"/>
+  <g transform="translate(350, 40)" opacity="0.12">
+    <path d="M20 40 Q60 10 100 40 T180 40" fill="none" stroke="white" stroke-width="4"/>
+    <path d="M20 65 Q60 35 100 65 T180 65" fill="none" stroke="white" stroke-width="3" opacity="0.7"/>
+    <path d="M30 90 Q70 60 110 90 T190 90" fill="none" stroke="white" stroke-width="2" opacity="0.5"/>
+  </g>
   <rect y="190" width="900" height="110" fill="#2c7da0" opacity="0.18"/>
   <text x="450" y="245" font-family="Georgia,serif" font-size="28" font-weight="bold" fill="white" opacity="0.95" text-anchor="middle">Boating Safety 101</text>
   <text x="450" y="275" font-family="Arial,sans-serif" font-size="14" fill="white" opacity="0.65" text-anchor="middle">Online Boater Education</text>

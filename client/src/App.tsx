@@ -17,6 +17,8 @@ import Admin from "@/pages/admin";
 import { InstructorChat } from "@/components/instructor-chat";
 import BlogEditor from "./pages/blog-editor";
 import About from "@/pages/about";
+import Quiz from "@/pages/quiz";
+import QuizEmbed from "@/pages/quiz-embed";
 
 function Router() {
   return (
@@ -27,6 +29,8 @@ function Router() {
       <Route path="/blog" component={BlogList} />
       <Route path="/blog/:slug" component={BlogDetail} />
       <Route path="/about" component={About} />
+      <Route path="/quiz" component={Quiz} />
+      <Route path="/embed/quiz" component={QuizEmbed} />
           <Route path="/admin/blog/new" component={BlogEditor} />
           <Route path="/admin/blog/:id" component={BlogEditor} />
       <Route path="/admin" component={Admin} />

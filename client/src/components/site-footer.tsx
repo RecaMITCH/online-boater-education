@@ -1,5 +1,7 @@
 import { Link } from "wouter";
 import { Anchor, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ContactFormDialog } from "@/components/contact-form";
 
 export function SiteFooter() {
   return (
@@ -35,6 +37,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/quiz" className="text-sm text-muted-foreground transition-colors" data-testid="link-footer-quiz">
+                  Do I Need a License?
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className="text-sm text-muted-foreground transition-colors" data-testid="link-footer-about">
                   About
                 </Link>
@@ -61,10 +68,13 @@ export function SiteFooter() {
 
           <div>
             <h3 className="font-semibold text-sm mb-3">Contact</h3>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
               <Mail className="h-4 w-4" />
               <span data-testid="text-contact-email">info@onlineboatereducation.com</span>
             </div>
+            <ContactFormDialog>
+              <Button variant="outline" size="sm">Send us a message</Button>
+            </ContactFormDialog>
           </div>
         </div>
 

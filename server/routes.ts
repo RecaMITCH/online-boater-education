@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { isAuthenticated, registerAuthRoutes } from "./auth";
-import { insertStateSchema, insertArticleSchema, insertResourceSchema } from "@shared/schema";
+import { insertStateSchema, insertArticleSchema, insertResourceSchema, insertContactSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
@@ -27,12 +27,94 @@ export async function registerRoutes(
   registerAuthRoutes(app);
 
 
-  // SEO: robots.txt
+  // SEO: robots.txt — allow all search engines and AI crawlers
   app.get("/robots.txt", (_req, res) => {
     res.type("text/plain").send(`User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
 
 Sitemap: https://onlineboatereducation.com/sitemap.xml`);
+  });
+
+  // AEO: llms.txt — machine-readable site summary for AI crawlers
+  app.get("/llms.txt", async (_req, res) => {
+    try {
+      const states = await storage.getActiveStates();
+      const articles = await storage.getPublishedArticles();
+
+      const stateList = states.map(s => `- /states/${s.slug}: ${s.name} boater education — ${s.fieldDayRequired ? "online + on-water assessment" : "online only available"}${s.minimumAgeOnlineOnly ? `, online-only age ${s.minimumAgeOnlineOnly}+` : ""}${s.coursePrice ? `, ${s.coursePrice}` : ""}`).join("\n");
+      const articleList = articles.map(a => `- /blog/${a.slug}: ${a.title}`).join("\n");
+
+      res.type("text/plain").send(`# Online Boater Education
+> State-approved online boating safety courses for boaters across the United States.
+
+Online Boater Education helps boaters find NASBLA-approved, state-approved boater education courses that satisfy certification requirements in all 50 states. Courses are self-paced, available online, and include an on-water assessment where required by state law. Certificates earned through NASBLA-approved courses are reciprocal across most U.S. states.
+
+## Key Pages
+- /: Homepage — overview of available state courses and how online boater education works
+- /states: Browse all state-approved boater education courses with requirements and pricing
+- /quiz: Interactive "Do I Need a Boating License?" quiz — answer 2 questions to get personalized requirements
+- /blog: Boater education blog with tips, guides, and safety resources
+- /about: About Online Boater Education — our mission, what we do, and contact information
+
+## Free Tools
+- /quiz: "Do I Need a Boating License?" quiz tool — determines requirements by state and age, shareable results via /quiz?state={slug}&age={age}
+- /embed/quiz: Embeddable iframe version of the quiz for third-party websites
+
+## Public API
+- /api/states: Full list of all active states with requirements data
+- /api/states/{slug}: JSON endpoint returning structured boater education requirements for any state
+
+## About
+- Accreditation: NASBLA (National Association of State Boating Law Administrators) approved courses
+- Target audience: First-time boaters, youth boaters, adults needing certification
+- Course format: Online self-paced + on-water assessment where required by state
+- Certificate validity: NASBLA-approved certificates are reciprocal across most U.S. states
+- Contact: info@onlineboatereducation.com
+
+## State Course Pages
+${stateList}
+
+## Blog Articles
+${articleList}
+
+## How It Works
+1. Find your state on the /states page or use the /quiz tool
+2. Review your state's requirements (age, on-water assessment, cost)
+3. Click through to a NASBLA-approved course provider
+4. Complete the online course at your own pace
+5. Attend an on-water assessment if required by your state
+6. Receive your boater education certificate — valid for life in most states
+`);
+    } catch (error) {
+      console.error("Error generating llms.txt:", error);
+      res.status(500).send("Error generating llms.txt");
+    }
   });
 
   // SEO: sitemap.xml — dynamically generated from database
@@ -67,6 +149,18 @@ Sitemap: https://onlineboatereducation.com/sitemap.xml`);
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/quiz</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/llms.txt</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>`;
 
       for (const state of states) {
@@ -361,6 +455,26 @@ Sitemap: https://onlineboatereducation.com/sitemap.xml`);
       console.error("Error saving site setting:", error);
       res.status(500).json({ message: "Failed to save setting" });
     }
+  });
+
+  // Contact form
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const validated = insertContactSchema.parse(req.body);
+      const submission = await storage.createContactSubmission(validated);
+      res.json({ message: "Thank you! We'll get back to you soon.", id: submission.id });
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res.status(400).json({ message: "Please fill in all required fields." });
+      }
+      console.error("Error saving contact submission:", error);
+      res.status(500).json({ message: "Something went wrong. Please try again." });
+    }
+  });
+
+  app.get("/api/admin/contact-submissions", isAuthenticated, async (_req, res) => {
+    const submissions = await storage.getContactSubmissions();
+    res.json(submissions);
   });
 
   // Image upload endpoint - accepts base64 JSON body

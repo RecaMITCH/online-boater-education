@@ -13,6 +13,7 @@ export function SiteHeader() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/states", label: "Find Your State" },
+    { href: "/quiz", label: "Do I Need a License?" },
     { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
   ];

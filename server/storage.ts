@@ -10,6 +10,9 @@ import {
   resources,
   type Resource,
   type InsertResource,
+  contactSubmissions,
+  type ContactSubmission,
+  type InsertContact,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -160,6 +163,15 @@ export class DatabaseStorage implements IStorage {
 
   async deleteResource(id: number): Promise<void> {
     await db.delete(resources).where(eq(resources.id, id));
+  }
+
+  async createContactSubmission(data: InsertContact): Promise<ContactSubmission> {
+    const [created] = await db.insert(contactSubmissions).values(data).returning();
+    return created;
+  }
+
+  async getContactSubmissions(): Promise<ContactSubmission[]> {
+    return db.select().from(contactSubmissions).orderBy(desc(contactSubmissions.createdAt));
   }
 }
 

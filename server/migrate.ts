@@ -74,6 +74,18 @@ export async function runMigrations() {
     )
   `);
 
+  // Contact submissions table
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS contact_submissions (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      state TEXT,
+      message TEXT NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
+
   // Migration v2: Update all state data with accurate requirements, agencies, and URLs
   console.log("Running state data accuracy updates (v2)...");
 

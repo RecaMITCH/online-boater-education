@@ -74,3 +74,16 @@ export type Article = typeof articles.$inferSelect;
 export const insertResourceSchema = createInsertSchema(resources);
 export type Resource = typeof resources.$inferSelect;
 export type InsertResource = typeof resources.$inferInsert;
+
+export const contactSubmissions = pgTable("contact_submissions", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  state: text("state"),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertContactSchema = createInsertSchema(contactSubmissions).omit({ id: true, createdAt: true });
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+export type InsertContact = z.infer<typeof insertContactSchema>;
