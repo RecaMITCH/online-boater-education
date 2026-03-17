@@ -125,9 +125,9 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/blog">
-                <Button size="lg" variant="outline" className="bg-white/5 text-white border-white/20 backdrop-blur-sm" data-testid="button-read-blog">
-                  Read Our Blog
+              <Link href="/quiz">
+                <Button size="lg" variant="outline" className="bg-white/5 text-white border-white/20 backdrop-blur-sm" data-testid="button-quiz">
+                  Do I Need a License?
                 </Button>
               </Link>
             </div>
