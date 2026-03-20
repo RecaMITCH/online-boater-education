@@ -74,6 +74,40 @@ interface WaterFeature {
   rotation?: number;
 }
 
+// --- Animation helpers ---
+
+/** Convert rotation (0=north/up) to a forward direction vector */
+function headingToVector(rotationDeg: number): { dx: number; dy: number } {
+  const rad = (rotationDeg * Math.PI) / 180;
+  return { dx: Math.sin(rad), dy: -Math.cos(rad) };
+}
+
+/** Get animated vessel position. progress 0→1 maps to start→collision */
+function getAnimatedPosition(vessel: Vessel, progress: number) {
+  const { dx, dy } = headingToVector(vessel.rotation);
+  // Vessels start 70px behind their diagram position and travel 140px total
+  const offset = -70 + 140 * progress;
+  return {
+    x: vessel.x + dx * offset,
+    y: vessel.y + dy * offset,
+  };
+}
+
+/** Generate wake trail points behind a vessel */
+function getWakeTrail(vessel: Vessel, progress: number): string {
+  const { dx, dy } = headingToVector(vessel.rotation);
+  const pos = getAnimatedPosition(vessel, progress);
+  // Wake extends behind the vessel
+  const wakeLen = 40 + progress * 30;
+  const spread = 8 + progress * 6;
+  const bx = pos.x - dx * wakeLen;
+  const by = pos.y - dy * wakeLen;
+  // Perpendicular direction for spread
+  const px = -dy;
+  const py = dx;
+  return `M${pos.x},${pos.y} L${bx + px * spread},${by + py * spread} L${bx - px * spread},${by - py * spread} Z`;
+}
+
 // --- Scenarios ---
 
 const ALL_SCENARIOS: Scenario[] = [
@@ -343,9 +377,9 @@ function getGrade(score: number, total: number): { grade: string; label: string;
   return { grade: "F", label: "Take the Course", color: "text-red-600" };
 }
 
-// --- SVG Diagram ---
+// --- SVG Components ---
 
-function BoatIcon({ x, y, rotation, type, color, label }: Vessel) {
+function BoatIcon({ x, y, rotation, type, color, label }: Vessel & { x: number; y: number }) {
   const size = type === "commercial" ? 28 : type === "pwc" ? 16 : type === "kayak" ? 20 : 22;
 
   return (
@@ -442,9 +476,22 @@ function WaterFeatureIcon({ feature }: { feature: WaterFeature }) {
   }
 }
 
-function ScenarioDiagram({ diagram, isFog }: { diagram: DiagramConfig; isFog?: boolean }) {
+function ScenarioDiagram({
+  diagram,
+  isFog,
+  progress,
+  collided,
+}: {
+  diagram: DiagramConfig;
+  isFog?: boolean;
+  progress: number;
+  collided: boolean;
+}) {
+  // Animated wave offset for subtle water movement
+  const waveOffset = progress * 60;
+
   return (
-    <div className="relative w-full max-w-[400px] mx-auto">
+    <div className={`relative w-full max-w-[400px] mx-auto ${collided ? "animate-shake" : ""}`}>
       <svg viewBox="0 0 400 400" className="w-full h-auto rounded-lg border border-white/10">
         <defs>
           <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="3" refY="2" orient="auto">
@@ -464,18 +511,22 @@ function ScenarioDiagram({ diagram, isFog }: { diagram: DiagramConfig; isFog?: b
         {/* Water background */}
         <rect width="400" height="400" fill="url(#water-gradient)" />
 
-        {/* Subtle wave lines */}
-        {[60, 130, 200, 270, 340].map((y) => (
-          <path
-            key={y}
-            d={`M0,${y} Q100,${y - 6} 200,${y} Q300,${y + 6} 400,${y}`}
-            fill="none"
-            stroke="rgba(96,165,250,0.1)"
-            strokeWidth={1}
-          />
-        ))}
+        {/* Animated wave lines */}
+        {[60, 130, 200, 270, 340].map((baseY, i) => {
+          const y = baseY;
+          const shift = Math.sin((waveOffset + i * 20) * 0.05) * 4;
+          return (
+            <path
+              key={y}
+              d={`M0,${y + shift} Q100,${y - 6 + shift} 200,${y + shift} Q300,${y + 6 + shift} 400,${y + shift}`}
+              fill="none"
+              stroke="rgba(96,165,250,0.12)"
+              strokeWidth={1}
+            />
+          );
+        })}
 
-        {/* Compass rose (small, top-right) */}
+        {/* Compass rose */}
         <g transform="translate(365, 35)" opacity={0.4}>
           <circle cx={0} cy={0} r={16} fill="none" stroke="white" strokeWidth={0.5} />
           <text x={0} y={-18} textAnchor="middle" fill="white" fontSize={9} fontWeight="bold">N</text>
@@ -493,29 +544,113 @@ function ScenarioDiagram({ diagram, isFog }: { diagram: DiagramConfig; isFog?: b
           <rect width="400" height="400" fill="rgba(200,200,200,0.4)" />
         )}
 
-        {/* Vessels */}
+        {/* Wake trails (behind each vessel) */}
+        {diagram.vessels.map((vessel, i) => {
+          const trail = getWakeTrail(vessel, progress);
+          return (
+            <path
+              key={`wake-${i}`}
+              d={trail}
+              fill={vessel.type === "you" ? "rgba(96,165,250,0.15)" : "rgba(255,255,255,0.08)"}
+              filter={isFog && vessel.type !== "you" ? "url(#fog-filter)" : undefined}
+            />
+          );
+        })}
+
+        {/* Other vessels (animated) */}
         <g filter={isFog ? "url(#fog-filter)" : undefined}>
           {diagram.vessels
             .filter((v) => v.type !== "you")
-            .map((vessel, i) => (
-              <BoatIcon key={i} {...vessel} />
-            ))}
+            .map((vessel, i) => {
+              const pos = getAnimatedPosition(vessel, progress);
+              return <BoatIcon key={i} {...vessel} x={pos.x} y={pos.y} />;
+            })}
         </g>
 
-        {/* Your vessel (always clear, even in fog) */}
+        {/* Your vessel (animated, always clear) */}
         {diagram.vessels
           .filter((v) => v.type === "you")
-          .map((vessel, i) => (
-            <BoatIcon key={`you-${i}`} {...vessel} />
-          ))}
+          .map((vessel, i) => {
+            const pos = getAnimatedPosition(vessel, progress);
+            return <BoatIcon key={`you-${i}`} {...vessel} x={pos.x} y={pos.y} />;
+          })}
+
+        {/* Collision flash overlay */}
+        {collided && (
+          <>
+            <rect width="400" height="400" fill="rgba(239,68,68,0.35)" />
+            {/* Collision burst */}
+            {(() => {
+              // Find midpoint between vessels for collision effect
+              const youVessel = diagram.vessels.find((v) => v.type === "you");
+              const otherVessel = diagram.vessels.find((v) => v.type !== "you");
+              if (!youVessel) return null;
+              const youPos = getAnimatedPosition(youVessel, 1);
+              const otherPos = otherVessel ? getAnimatedPosition(otherVessel, 1) : youPos;
+              const cx = (youPos.x + otherPos.x) / 2;
+              const cy = (youPos.y + otherPos.y) / 2;
+              return (
+                <g transform={`translate(${cx}, ${cy})`}>
+                  {/* Burst rays */}
+                  {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
+                    const rad = (angle * Math.PI) / 180;
+                    return (
+                      <line
+                        key={angle}
+                        x1={Math.cos(rad) * 10}
+                        y1={Math.sin(rad) * 10}
+                        x2={Math.cos(rad) * 35}
+                        y2={Math.sin(rad) * 35}
+                        stroke="#fbbf24"
+                        strokeWidth={3}
+                        opacity={0.8}
+                      />
+                    );
+                  })}
+                  <circle cx={0} cy={0} r={18} fill="#ef4444" opacity={0.6} />
+                  <circle cx={0} cy={0} r={10} fill="#fbbf24" opacity={0.8} />
+                </g>
+              );
+            })()}
+            <text x={200} y={200} textAnchor="middle" fill="white" fontSize={28} fontWeight="bold" dy={-60}
+              style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>
+              COLLISION!
+            </text>
+          </>
+        )}
+
+        {/* Proximity warning when vessels are close */}
+        {!collided && progress > 0.65 && diagram.vessels.length > 1 && (
+          <text x={200} y={30} textAnchor="middle" fill="#fbbf24" fontSize={14} fontWeight="bold"
+            opacity={Math.sin(progress * 20) * 0.5 + 0.5}
+            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>
+            ⚠ VESSELS CLOSING — DECIDE NOW
+          </text>
+        )}
       </svg>
+
+      {/* CSS shake animation */}
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10% { transform: translateX(-8px) rotate(-1deg); }
+          20% { transform: translateX(8px) rotate(1deg); }
+          30% { transform: translateX(-6px) rotate(-0.5deg); }
+          40% { transform: translateX(6px) rotate(0.5deg); }
+          50% { transform: translateX(-4px); }
+          60% { transform: translateX(4px); }
+          70% { transform: translateX(-2px); }
+          80% { transform: translateX(2px); }
+        }
+        .animate-shake { animation: shake 0.6s ease-in-out; }
+      `}</style>
     </div>
   );
 }
 
 // --- Game States ---
 
-type GameState = "intro" | "playing" | "feedback" | "results";
+type GameState = "intro" | "playing" | "collision" | "feedback" | "results";
 
 interface RoundResult {
   scenario: Scenario;
@@ -534,7 +669,11 @@ export default function RightOfWay() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [results, setResults] = useState<RoundResult[]>([]);
   const [playerAction, setPlayerAction] = useState<Action | null>(null);
+  const [animProgress, setAnimProgress] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const animRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
+  const durationRef = useRef<number>(0);
   const gameRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -547,10 +686,35 @@ export default function RightOfWay() {
     setCurrentIndex(0);
     setResults([]);
     setPlayerAction(null);
+    setAnimProgress(0);
     setGameState("playing");
   }, []);
 
-  // Timer
+  // Animation loop (smooth 60fps progress)
+  useEffect(() => {
+    if (gameState !== "playing" || !currentScenario) return;
+
+    startTimeRef.current = performance.now();
+    durationRef.current = currentScenario.timeLimit * 1000;
+    setAnimProgress(0);
+
+    const tick = (now: number) => {
+      const elapsed = now - startTimeRef.current;
+      const p = Math.min(elapsed / durationRef.current, 1);
+      setAnimProgress(p);
+      if (p < 1) {
+        animRef.current = requestAnimationFrame(tick);
+      }
+    };
+
+    animRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (animRef.current) cancelAnimationFrame(animRef.current);
+    };
+  }, [gameState, currentIndex, currentScenario]);
+
+  // Timer (1-second countdown for display)
   useEffect(() => {
     if (gameState !== "playing" || !currentScenario) return;
 
@@ -561,18 +725,11 @@ export default function RightOfWay() {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
-          // Time's up — record as wrong
-          setResults((r) => [
-            ...r,
-            {
-              scenario: currentScenario,
-              playerAction: null,
-              correct: false,
-              timeRemaining: 0,
-              timedOut: true,
-            },
-          ]);
-          setGameState("feedback");
+          if (animRef.current) cancelAnimationFrame(animRef.current);
+          setAnimProgress(1);
+
+          // Show collision state briefly before feedback
+          setGameState("collision");
           return 0;
         }
         return prev - 1;
@@ -583,6 +740,27 @@ export default function RightOfWay() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [gameState, currentIndex, currentScenario]);
+
+  // Collision → feedback transition
+  useEffect(() => {
+    if (gameState !== "collision" || !currentScenario) return;
+
+    const timeout = setTimeout(() => {
+      setResults((r) => [
+        ...r,
+        {
+          scenario: currentScenario,
+          playerAction: null,
+          correct: false,
+          timeRemaining: 0,
+          timedOut: true,
+        },
+      ]);
+      setGameState("feedback");
+    }, 1500);
+
+    return () => clearTimeout(timeout);
+  }, [gameState, currentScenario]);
 
   // Scroll to top on state change
   useEffect(() => {
@@ -597,6 +775,7 @@ export default function RightOfWay() {
       if (gameState !== "playing" || !currentScenario || playerAction) return;
 
       if (timerRef.current) clearInterval(timerRef.current);
+      if (animRef.current) cancelAnimationFrame(animRef.current);
       setPlayerAction(action);
 
       const correct = action === currentScenario.correctAction;
@@ -620,6 +799,7 @@ export default function RightOfWay() {
       setGameState("results");
     } else {
       setCurrentIndex((i) => i + 1);
+      setAnimProgress(0);
       setGameState("playing");
     }
   }, [currentIndex, scenarios.length]);
@@ -655,7 +835,7 @@ export default function RightOfWay() {
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
               Test your knowledge of boating navigation rules. You'll face 10 real-world
-              scenarios and must decide the correct action — just like on the water.
+              scenarios and must decide the correct action before the vessels collide.
             </p>
           </div>
 
@@ -668,8 +848,8 @@ export default function RightOfWay() {
                     <Ship className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Read the Scenario</p>
-                    <p className="text-sm text-muted-foreground">Each round describes a boating encounter with a bird's-eye diagram.</p>
+                    <p className="font-medium text-sm">Watch the Encounter</p>
+                    <p className="text-sm text-muted-foreground">Vessels move toward each other in real time. Read the scenario and watch the diagram.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -677,8 +857,8 @@ export default function RightOfWay() {
                     <Clock className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium text-sm">Beat the Clock</p>
-                    <p className="text-sm text-muted-foreground">You have 10–15 seconds to choose your action. On the water, hesitation can be dangerous.</p>
+                    <p className="font-medium text-sm">Decide Before They Collide</p>
+                    <p className="text-sm text-muted-foreground">You have seconds to act. If you run out of time, the vessels crash.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -740,9 +920,10 @@ export default function RightOfWay() {
   }
 
   // --- PLAYING ---
-  if (gameState === "playing" && currentScenario) {
+  if ((gameState === "playing" || gameState === "collision") && currentScenario) {
     const timerPct = (timeRemaining / currentScenario.timeLimit) * 100;
     const isFog = currentScenario.id === 11;
+    const isCollision = gameState === "collision";
 
     return (
       <div ref={gameRef} className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -753,9 +934,9 @@ export default function RightOfWay() {
               Round {currentIndex + 1} / {scenarios.length}
             </Badge>
             <div className="flex items-center gap-2">
-              <Clock className={`h-4 w-4 ${timeRemaining <= 3 ? "text-red-500" : "text-muted-foreground"}`} />
+              <Clock className={`h-4 w-4 ${timeRemaining <= 3 ? "text-red-500 animate-pulse" : "text-muted-foreground"}`} />
               <span className={`font-mono font-bold text-lg ${timeRemaining <= 3 ? "text-red-500" : ""}`}>
-                {timeRemaining}s
+                {isCollision ? "0" : timeRemaining}s
               </span>
             </div>
           </div>
@@ -764,9 +945,9 @@ export default function RightOfWay() {
           <div className="w-full h-2 bg-muted rounded-full mb-6 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-1000 ease-linear ${
-                timerPct > 50 ? "bg-primary" : timerPct > 25 ? "bg-yellow-500" : "bg-red-500"
+                isCollision ? "bg-red-500" : timerPct > 50 ? "bg-primary" : timerPct > 25 ? "bg-yellow-500" : "bg-red-500"
               }`}
-              style={{ width: `${timerPct}%` }}
+              style={{ width: isCollision ? "0%" : `${timerPct}%` }}
             />
           </div>
 
@@ -777,27 +958,45 @@ export default function RightOfWay() {
           <h2 className="text-xl font-serif font-bold mb-2">{currentScenario.title}</h2>
           <p className="text-muted-foreground mb-6">{currentScenario.situation}</p>
 
-          {/* Diagram */}
-          <ScenarioDiagram diagram={currentScenario.diagram} isFog={isFog} />
+          {/* Animated Diagram */}
+          <ScenarioDiagram
+            diagram={currentScenario.diagram}
+            isFog={isFog}
+            progress={animProgress}
+            collided={isCollision}
+          />
 
-          {/* Actions */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {ACTIONS.map((action) => (
-              <Button
-                key={action.id}
-                variant="outline"
-                size="lg"
-                className="h-auto py-4 px-4 text-left justify-start gap-3"
-                onClick={() => handleAction(action.id)}
-                data-testid={`action-${action.id}`}
-              >
-                <span className="text-2xl">{action.icon}</span>
-                <div>
-                  <div className="font-medium">{action.label}</div>
-                </div>
-              </Button>
-            ))}
-          </div>
+          {/* Actions (hidden during collision) */}
+          {!isCollision && (
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {ACTIONS.map((action) => (
+                <Button
+                  key={action.id}
+                  variant="outline"
+                  size="lg"
+                  className={`h-auto py-4 px-4 text-left justify-start gap-3 transition-all ${
+                    timeRemaining <= 3 ? "border-red-500/30" : ""
+                  }`}
+                  onClick={() => handleAction(action.id)}
+                  data-testid={`action-${action.id}`}
+                >
+                  <span className="text-2xl">{action.icon}</span>
+                  <div>
+                    <div className="font-medium">{action.label}</div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {/* Collision message */}
+          {isCollision && (
+            <div className="mt-6 rounded-lg bg-red-500/10 border border-red-500/30 p-4 text-center">
+              <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+              <p className="font-bold text-red-500 text-lg">You didn't act in time!</p>
+              <p className="text-sm text-muted-foreground">The vessels collided. On the water, this could mean injuries, damage, or worse.</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -821,11 +1020,11 @@ export default function RightOfWay() {
             )}
             <div>
               <p className={`font-bold ${correct ? "text-green-500" : "text-red-500"}`}>
-                {lastResult.timedOut ? "Time's Up!" : correct ? "Correct!" : "Incorrect"}
+                {lastResult.timedOut ? "Collision!" : correct ? "Correct!" : "Incorrect"}
               </p>
               <p className="text-sm text-muted-foreground">
                 {lastResult.timedOut
-                  ? "You ran out of time to make a decision."
+                  ? `You ran out of time. The correct action was "${correctActionObj.label}".`
                   : correct
                   ? `You chose "${correctActionObj.label}" — that's right!`
                   : `You chose "${playerActionObj?.label}". The correct action was "${correctActionObj.label}".`}
@@ -833,8 +1032,8 @@ export default function RightOfWay() {
             </div>
           </div>
 
-          {/* Diagram replay */}
-          <ScenarioDiagram diagram={lastResult.scenario.diagram} />
+          {/* Diagram (static, at starting positions) */}
+          <ScenarioDiagram diagram={lastResult.scenario.diagram} progress={0} collided={false} />
 
           {/* Rule explanation */}
           <Card className="mt-6">
@@ -911,7 +1110,7 @@ export default function RightOfWay() {
                   const correctActionLabel = ACTIONS.find((a) => a.id === r.scenario.correctAction)?.shortLabel;
                   const playerActionLabel = r.playerAction
                     ? ACTIONS.find((a) => a.id === r.playerAction)?.shortLabel
-                    : "No answer";
+                    : "Collision";
 
                   return (
                     <div
@@ -929,7 +1128,7 @@ export default function RightOfWay() {
                         <p className="font-medium text-sm truncate">{r.scenario.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {r.timedOut
-                            ? `Timed out — Correct: ${correctActionLabel}`
+                            ? `💥 Collision — Correct: ${correctActionLabel}`
                             : r.correct
                             ? `${playerActionLabel}`
                             : `${playerActionLabel} → Correct: ${correctActionLabel}`}
