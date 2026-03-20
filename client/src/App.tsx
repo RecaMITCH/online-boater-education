@@ -19,6 +19,7 @@ import BlogEditor from "./pages/blog-editor";
 import About from "@/pages/about";
 import Quiz from "@/pages/quiz";
 import QuizEmbed from "@/pages/quiz-embed";
+import RightOfWay from "@/pages/right-of-way";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/quiz" component={Quiz} />
       <Route path="/embed/quiz" component={QuizEmbed} />
+      <Route path="/right-of-way" component={RightOfWay} />
           <Route path="/admin/blog/new" component={BlogEditor} />
           <Route path="/admin/blog/:id" component={BlogEditor} />
       <Route path="/admin" component={Admin} />

@@ -390,6 +390,72 @@ export function serveStatic(app: Express) {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 
+  // SEO: Server-side meta tag injection for right-of-way game
+  app.get("/right-of-way", async (_req, res) => {
+    try {
+      const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+
+      const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Right of Way Game" }
+        ]
+      };
+
+      const gameSchema = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Right of Way — Boating Navigation Game",
+        "url": "https://onlineboatereducation.com/right-of-way",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "All",
+        "description": "Free interactive game to test your knowledge of boating right-of-way rules. Face 10 real-world navigation encounters and learn the correct action for each.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      };
+
+      const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What are boating right-of-way rules?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Boating right-of-way rules (Navigation Rules or COLREGS) determine which vessel must give way in an encounter. Key rules include: vessels crossing from your starboard have right of way, power gives way to sail, and overtaking vessels must keep clear."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens when two boats meet head-on?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "When two power-driven vessels meet head-on, both must alter course to starboard (right) so they pass port-to-port. This is similar to driving on the right side of the road."
+            }
+          }
+        ]
+      };
+
+      const enriched = injectMetaTags(indexHtml, {
+        title: "Right of Way: Boating Navigation Game | Test Your Knowledge",
+        description: "Test your knowledge of boating right-of-way rules with our free interactive game. Face 10 real-world navigation encounters and learn the correct action for each scenario.",
+        canonical: "https://onlineboatereducation.com/right-of-way",
+        structuredData: [breadcrumbSchema, gameSchema, faqSchema]
+      });
+
+      return res.send(enriched);
+    } catch (error) {
+      console.error("Error injecting game SEO:", error);
+    }
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
   // Embed routes - serve index.html without header/footer injection
   app.get("/embed/quiz", async (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));

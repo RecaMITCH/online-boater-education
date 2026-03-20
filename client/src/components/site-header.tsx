@@ -14,6 +14,7 @@ export function SiteHeader() {
     { href: "/", label: "Home" },
     { href: "/states", label: "Find Your State" },
     { href: "/quiz", label: "Do I Need a License?" },
+    { href: "/right-of-way", label: "Play the Game" },
     { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
   ];

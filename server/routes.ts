@@ -85,6 +85,7 @@ Online Boater Education helps boaters find NASBLA-approved, state-approved boate
 ## Free Tools
 - /quiz: "Do I Need a Boating License?" quiz tool — determines requirements by state and age, shareable results via /quiz?state={slug}&age={age}
 - /embed/quiz: Embeddable iframe version of the quiz for third-party websites
+- /right-of-way: "Right of Way" interactive boating navigation game — 10 real-world encounter scenarios testing knowledge of COLREGS navigation rules
 
 ## Public API
 - /api/states: Full list of all active states with requirements data
@@ -155,6 +156,12 @@ ${articleList}
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/right-of-way</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://onlineboatereducation.com/llms.txt</loc>
