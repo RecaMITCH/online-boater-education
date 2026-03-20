@@ -93,21 +93,6 @@ function getAnimatedPosition(vessel: Vessel, progress: number) {
   };
 }
 
-/** Generate wake trail points behind a vessel */
-function getWakeTrail(vessel: Vessel, progress: number): string {
-  const { dx, dy } = headingToVector(vessel.rotation);
-  const pos = getAnimatedPosition(vessel, progress);
-  // Wake extends behind the vessel
-  const wakeLen = 40 + progress * 30;
-  const spread = 8 + progress * 6;
-  const bx = pos.x - dx * wakeLen;
-  const by = pos.y - dy * wakeLen;
-  // Perpendicular direction for spread
-  const px = -dy;
-  const py = dx;
-  return `M${pos.x},${pos.y} L${bx + px * spread},${by + py * spread} L${bx - px * spread},${by - py * spread} Z`;
-}
-
 // --- Scenarios ---
 
 const ALL_SCENARIOS: Scenario[] = [
@@ -379,52 +364,175 @@ function getGrade(score: number, total: number): { grade: string; label: string;
 
 // --- SVG Components ---
 
-function BoatIcon({ x, y, rotation, type, color, label }: Vessel & { x: number; y: number }) {
-  const size = type === "commercial" ? 28 : type === "pwc" ? 16 : type === "kayak" ? 20 : 22;
+/** Realistic powerboat / motorboat (top-down) */
+function PowerboatShape({ color, isYou }: { color: string; isYou: boolean }) {
+  const hull = isYou ? color : color;
+  const hullDark = isYou ? "#1e40af" : "#991b1b";
+  const deck = isYou ? "#dbeafe" : "#fecaca";
+  return (
+    <g>
+      {/* Shadow */}
+      <ellipse cx={2} cy={2} rx={10} ry={22} fill="rgba(0,0,0,0.25)" />
+      {/* Hull */}
+      <path d="M0,-22 C8,-20 12,-10 12,8 C12,16 8,20 4,22 L-4,22 C-8,20 -12,16 -12,8 C-12,-10 -8,-20 0,-22Z"
+        fill={hull} stroke={hullDark} strokeWidth={1.2} />
+      {/* Deck / cockpit area */}
+      <path d="M0,-14 C5,-12 7,-4 7,6 C7,10 5,14 3,16 L-3,16 C-5,14 -7,10 -7,6 C-7,-4 -5,-12 0,-14Z"
+        fill={deck} opacity={0.4} />
+      {/* Windshield */}
+      <path d="M-5,-6 C-3,-10 3,-10 5,-6" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth={1.5} strokeLinecap="round" />
+      {/* Console/helm dot */}
+      <circle cx={0} cy={-2} r={2} fill="rgba(255,255,255,0.5)" />
+      {/* Bow accent */}
+      <line x1={0} y1={-22} x2={0} y2={-16} stroke="white" strokeWidth={0.8} opacity={0.5} />
+    </g>
+  );
+}
 
+/** Realistic sailboat (top-down with sail) */
+function SailboatShape({ color }: { color: string }) {
+  return (
+    <g>
+      <ellipse cx={2} cy={2} rx={8} ry={22} fill="rgba(0,0,0,0.2)" />
+      {/* Hull - narrow sailboat shape */}
+      <path d="M0,-24 C6,-20 8,-8 8,10 C8,16 5,20 3,22 L-3,22 C-5,20 -8,16 -8,10 C-8,-8 -6,-20 0,-24Z"
+        fill={color} stroke="rgba(0,0,0,0.3)" strokeWidth={1} />
+      {/* Main sail */}
+      <path d="M0,-18 L14,4 L0,10 Z" fill="white" opacity={0.85} stroke="rgba(0,0,0,0.15)" strokeWidth={0.5} />
+      {/* Jib sail */}
+      <path d="M0,-18 L-8,0 L0,2 Z" fill="white" opacity={0.6} stroke="rgba(0,0,0,0.1)" strokeWidth={0.5} />
+      {/* Mast */}
+      <circle cx={0} cy={-2} r={1.5} fill="#333" />
+    </g>
+  );
+}
+
+/** Realistic commercial / cargo vessel */
+function CommercialShape({ color }: { color: string }) {
+  return (
+    <g>
+      <ellipse cx={3} cy={3} rx={16} ry={32} fill="rgba(0,0,0,0.3)" />
+      {/* Hull */}
+      <path d="M0,-34 C14,-30 16,-14 16,16 C16,26 12,32 6,34 L-6,34 C-12,32 -16,26 -16,16 C-16,-14 -14,-30 0,-34Z"
+        fill={color} stroke="rgba(0,0,0,0.4)" strokeWidth={1.5} />
+      {/* Deck */}
+      <rect x={-10} y={-20} width={20} height={30} rx={3} fill="rgba(255,255,255,0.15)" />
+      {/* Bridge/wheelhouse */}
+      <rect x={-6} y={-16} width={12} height={8} rx={2} fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.2)" strokeWidth={0.5} />
+      {/* Containers/cargo */}
+      <rect x={-8} y={-4} width={6} height={18} rx={1} fill="rgba(255,200,50,0.4)" />
+      <rect x={2} y={-4} width={6} height={18} rx={1} fill="rgba(50,150,255,0.3)" />
+      {/* Bow accent */}
+      <line x1={0} y1={-34} x2={0} y2={-24} stroke="white" strokeWidth={1} opacity={0.4} />
+    </g>
+  );
+}
+
+/** PWC / jet ski */
+function PwcShape({ color }: { color: string }) {
+  return (
+    <g>
+      <ellipse cx={1} cy={1} rx={6} ry={14} fill="rgba(0,0,0,0.2)" />
+      {/* Hull */}
+      <path d="M0,-16 C5,-14 7,-6 7,4 C7,10 4,14 2,16 L-2,16 C-4,14 -7,10 -7,4 C-7,-6 -5,-14 0,-16Z"
+        fill={color} stroke="rgba(0,0,0,0.3)" strokeWidth={1} />
+      {/* Seat */}
+      <ellipse cx={0} cy={2} rx={4} ry={6} fill="rgba(0,0,0,0.25)" />
+      {/* Handlebar */}
+      <line x1={-4} y1={-6} x2={4} y2={-6} stroke="rgba(255,255,255,0.5)" strokeWidth={1.5} strokeLinecap="round" />
+    </g>
+  );
+}
+
+/** Kayak / canoe */
+function KayakShape({ color }: { color: string }) {
+  return (
+    <g>
+      <ellipse cx={1} cy={1} rx={4} ry={18} fill="rgba(0,0,0,0.15)" />
+      {/* Hull */}
+      <path d="M0,-20 C3,-16 4,-8 4,8 C4,14 2,18 0,20 C-2,18 -4,14 -4,8 C-4,-8 -3,-16 0,-20Z"
+        fill={color} stroke="rgba(0,0,0,0.2)" strokeWidth={0.8} />
+      {/* Cockpit opening */}
+      <ellipse cx={0} cy={0} rx={2.5} ry={4} fill="rgba(0,0,0,0.2)" />
+      {/* Paddle */}
+      <line x1={-8} y1={-3} x2={8} y2={3} stroke="#8B7355" strokeWidth={1.2} strokeLinecap="round" />
+      <ellipse cx={-8} cy={-3} rx={1.5} ry={3.5} fill="#8B7355" opacity={0.7} transform="rotate(-20 -8 -3)" />
+      <ellipse cx={8} cy={3} rx={1.5} ry={3.5} fill="#8B7355" opacity={0.7} transform="rotate(-20 8 3)" />
+    </g>
+  );
+}
+
+function BoatIcon({ x, y, rotation, type, color, label }: Vessel & { x: number; y: number }) {
   return (
     <g transform={`translate(${x}, ${y}) rotate(${rotation})`}>
       {type === "commercial" ? (
-        <>
-          <rect x={-size / 2} y={-size} width={size} height={size * 2} rx={4} fill={color} opacity={0.9} />
-          <rect x={-size / 2 + 3} y={-size + 4} width={size - 6} height={8} rx={2} fill="white" opacity={0.3} />
-        </>
+        <CommercialShape color={color} />
       ) : type === "sail" ? (
-        <>
-          <path d={`M0,${-size} L${size / 2},${size * 0.7} L${-size / 2},${size * 0.7} Z`} fill={color} opacity={0.9} />
-          <line x1={0} y1={-size * 0.3} x2={size * 0.6} y2={0} stroke="white" strokeWidth={1.5} opacity={0.6} />
-        </>
+        <SailboatShape color={color} />
       ) : type === "kayak" ? (
-        <>
-          <ellipse cx={0} cy={0} rx={size / 4} ry={size} fill={color} opacity={0.9} />
-          <line x1={-size * 0.4} y1={-2} x2={size * 0.4} y2={2} stroke="white" strokeWidth={1.5} opacity={0.5} />
-        </>
+        <KayakShape color={color} />
       ) : type === "pwc" ? (
-        <>
-          <path d={`M0,${-size} L${size / 2.5},${size * 0.6} L0,${size * 0.4} L${-size / 2.5},${size * 0.6} Z`} fill={color} opacity={0.9} />
-        </>
+        <PwcShape color={color} />
       ) : (
-        <>
-          <path d={`M0,${-size} L${size / 2},${size * 0.7} L${size / 3},${size} L${-size / 3},${size} L${-size / 2},${size * 0.7} Z`} fill={color} opacity={0.9} />
-          {type === "you" && (
-            <circle cx={0} cy={0} r={3} fill="white" opacity={0.8} />
-          )}
-        </>
+        <PowerboatShape color={color} isYou={type === "you"} />
       )}
-      {/* Direction arrow */}
-      <line x1={0} y1={-size - 4} x2={0} y2={-size - 14} stroke={color} strokeWidth={2} markerEnd="url(#arrowhead)" opacity={0.7} />
-      {/* Label */}
+      {/* Direction arrow (subtle) */}
+      <line x1={0} y1={-28} x2={0} y2={-38} stroke="white" strokeWidth={1.5} opacity={0.5} markerEnd="url(#arrowhead)" />
+      {/* Label with background pill */}
+      <rect x={-24} y={24} width={48} height={16} rx={8} fill="rgba(0,0,0,0.6)" />
       <text
         x={0}
-        y={size + 16}
+        y={35}
         textAnchor="middle"
         fill="white"
-        fontSize={11}
+        fontSize={10}
         fontWeight="bold"
-        style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}
+        letterSpacing="0.5"
       >
         {label}
       </text>
+    </g>
+  );
+}
+
+/** Realistic V-shaped foam wake behind a vessel */
+function RealisticWake({ vessel, progress }: { vessel: Vessel; progress: number }) {
+  const pos = getAnimatedPosition(vessel, progress);
+  const { dx, dy } = headingToVector(vessel.rotation);
+  // Wake length grows with progress
+  const wakeLen = 30 + progress * 50;
+  const spread = 12 + progress * 10;
+  // Point behind the vessel
+  const bx = pos.x - dx * wakeLen;
+  const by = pos.y - dy * wakeLen;
+  // Perpendicular for spread
+  const px = -dy;
+  const py = dx;
+  // Inner foam trail (brighter, narrower)
+  const innerSpread = spread * 0.4;
+
+  return (
+    <g opacity={0.3 + progress * 0.3}>
+      {/* Outer wake V */}
+      <path
+        d={`M${pos.x - dx * 4},${pos.y - dy * 4}
+            L${bx + px * spread},${by + py * spread}
+            Q${bx + px * spread * 0.3},${by + py * spread * 0.3} ${bx},${by}
+            Q${bx - px * spread * 0.3},${by - py * spread * 0.3} ${bx - px * spread},${by - py * spread}
+            Z`}
+        fill="rgba(255,255,255,0.12)"
+      />
+      {/* Inner foam */}
+      <path
+        d={`M${pos.x - dx * 2},${pos.y - dy * 2}
+            L${bx + px * innerSpread},${by + py * innerSpread}
+            L${bx},${by}
+            L${bx - px * innerSpread},${by - py * innerSpread}
+            Z`}
+        fill="rgba(255,255,255,0.2)"
+      />
+      {/* Bow wave splash (small white arc at front) */}
+      <circle cx={pos.x + dx * 2} cy={pos.y + dy * 2} r={4} fill="rgba(255,255,255,0.25)" />
     </g>
   );
 }
@@ -434,41 +542,82 @@ function WaterFeatureIcon({ feature }: { feature: WaterFeature }) {
     case "buoy-red":
       return (
         <g transform={`translate(${feature.x}, ${feature.y})`}>
-          <circle cx={0} cy={0} r={10} fill="#dc2626" stroke="#991b1b" strokeWidth={2} />
-          <text x={0} y={4} textAnchor="middle" fill="white" fontSize={9} fontWeight="bold">R</text>
+          {/* Water ripple around buoy */}
+          <circle cx={0} cy={0} r={16} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+          <circle cx={0} cy={0} r={12} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={0.5} />
+          {/* Buoy body */}
+          <circle cx={0} cy={0} r={8} fill="#dc2626" />
+          <circle cx={0} cy={0} r={8} fill="url(#buoy-shine)" />
+          <circle cx={0} cy={0} r={8} fill="none" stroke="#7f1d1d" strokeWidth={1.5} />
+          {/* Top mark */}
+          <circle cx={0} cy={-4} r={2} fill="white" opacity={0.4} />
+          <text x={0} y={3} textAnchor="middle" fill="white" fontSize={8} fontWeight="bold">R</text>
         </g>
       );
     case "buoy-green":
       return (
         <g transform={`translate(${feature.x}, ${feature.y})`}>
-          <rect x={-9} y={-12} width={18} height={24} fill="#16a34a" stroke="#15803d" strokeWidth={2} />
-          <text x={0} y={4} textAnchor="middle" fill="white" fontSize={9} fontWeight="bold">G</text>
+          <circle cx={0} cy={0} r={16} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+          <circle cx={0} cy={0} r={12} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={0.5} />
+          {/* Square/can shape for green */}
+          <rect x={-7} y={-9} width={14} height={18} rx={2} fill="#16a34a" stroke="#14532d" strokeWidth={1.5} />
+          <rect x={-5} y={-6} width={4} height={4} rx={1} fill="white" opacity={0.15} />
+          <text x={0} y={4} textAnchor="middle" fill="white" fontSize={8} fontWeight="bold">G</text>
         </g>
       );
     case "shore":
       return (
-        <rect
-          x={feature.x}
-          y={feature.y}
-          width={feature.width || 40}
-          height={feature.height || 400}
-          fill="#92400e"
-          opacity={0.5}
-          rx={4}
-        />
+        <g>
+          <rect
+            x={feature.x}
+            y={feature.y}
+            width={feature.width || 40}
+            height={feature.height || 400}
+            fill="#5c4033"
+            opacity={0.7}
+          />
+          {/* Sandy edge */}
+          <rect
+            x={feature.x + (feature.x < 200 ? (feature.width || 40) - 6 : 0)}
+            y={feature.y}
+            width={6}
+            height={feature.height || 400}
+            fill="#d4a574"
+            opacity={0.5}
+          />
+          {/* Trees/vegetation hint */}
+          {[0.15, 0.35, 0.55, 0.75, 0.9].map((pct) => (
+            <circle
+              key={pct}
+              cx={feature.x + (feature.width || 40) / 2}
+              cy={feature.y + (feature.height || 400) * pct}
+              r={8}
+              fill="#2d5016"
+              opacity={0.3}
+            />
+          ))}
+        </g>
       );
     case "swimmer":
       return (
         <g transform={`translate(${feature.x}, ${feature.y})`}>
-          <circle cx={0} cy={0} r={8} fill="#f59e0b" stroke="#d97706" strokeWidth={1.5} />
-          <text x={0} y={4} textAnchor="middle" fill="white" fontSize={8}>🏊</text>
+          {/* Water disturbance */}
+          <circle cx={0} cy={0} r={12} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth={0.8} />
+          {/* Person shape */}
+          <circle cx={0} cy={-2} r={4} fill="#f59e0b" stroke="#b45309" strokeWidth={1} />
+          <circle cx={0} cy={-4} r={2} fill="#fbbf24" />
         </g>
       );
     case "wake-zone":
       return (
         <g transform={`translate(${feature.x}, ${feature.y})`}>
-          <rect x={0} y={0} width={feature.width || 200} height={feature.height || 60} fill="#1e3a5f" opacity={0.5} rx={4} stroke="#60a5fa" strokeWidth={1} strokeDasharray="6 3" />
-          <text x={(feature.width || 200) / 2} y={(feature.height || 60) / 2 + 4} textAnchor="middle" fill="#93c5fd" fontSize={12} fontWeight="bold">NO WAKE ZONE</text>
+          <rect x={0} y={0} width={feature.width || 200} height={feature.height || 60} fill="rgba(0,0,0,0.2)" rx={4} />
+          <rect x={0} y={0} width={feature.width || 200} height={feature.height || 60} fill="none" rx={4}
+            stroke="#fbbf24" strokeWidth={2} strokeDasharray="8 4" />
+          <rect x={20} y={12} width={(feature.width || 200) - 40} height={36} rx={4} fill="rgba(0,0,0,0.4)" />
+          <text x={(feature.width || 200) / 2} y={(feature.height || 60) / 2 + 5} textAnchor="middle" fill="#fbbf24" fontSize={13} fontWeight="bold">
+            NO WAKE ZONE
+          </text>
         </g>
       );
     default:
@@ -487,51 +636,69 @@ function ScenarioDiagram({
   progress: number;
   collided: boolean;
 }) {
-  // Animated wave offset for subtle water movement
-  const waveOffset = progress * 60;
-
   return (
-    <div className={`relative w-full max-w-[400px] mx-auto ${collided ? "animate-shake" : ""}`}>
-      <svg viewBox="0 0 400 400" className="w-full h-auto rounded-lg border border-white/10">
+    <div className={`relative w-full max-w-[500px] mx-auto ${collided ? "animate-shake" : ""}`}>
+      <svg viewBox="0 0 400 400" className="w-full h-auto rounded-xl overflow-hidden shadow-2xl border border-white/5">
         <defs>
-          <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="3" refY="2" orient="auto">
-            <polygon points="0 0, 6 2, 0 4" fill="currentColor" opacity="0.5" />
+          <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="4" refY="2.5" orient="auto">
+            <polygon points="0 0, 8 2.5, 0 5" fill="white" opacity="0.6" />
           </marker>
-          <radialGradient id="water-gradient" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#1e3a5f" />
-            <stop offset="100%" stopColor="#0f172a" />
+          {/* Buoy shine gradient */}
+          <radialGradient id="buoy-shine" cx="35%" cy="35%">
+            <stop offset="0%" stopColor="white" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
           </radialGradient>
           {isFog && (
             <filter id="fog-filter">
-              <feGaussianBlur stdDeviation="8" />
+              <feGaussianBlur stdDeviation="10" />
             </filter>
           )}
+          {/* Water texture pattern */}
+          <filter id="water-noise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed={Math.floor(progress * 10)} result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
+          </filter>
+          {/* Glow for collision */}
+          <filter id="collision-glow">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
         </defs>
 
-        {/* Water background */}
-        <rect width="400" height="400" fill="url(#water-gradient)" />
+        {/* Photo water background */}
+        <image
+          href="/images/hero-boating.png"
+          x={-50} y={-50}
+          width={500} height={500}
+          preserveAspectRatio="xMidYMid slice"
+        />
+        {/* Darken overlay to make vessels pop */}
+        <rect width="400" height="400" fill="rgba(0,20,50,0.45)" />
 
-        {/* Animated wave lines */}
-        {[60, 130, 200, 270, 340].map((baseY, i) => {
-          const y = baseY;
-          const shift = Math.sin((waveOffset + i * 20) * 0.05) * 4;
+        {/* Subtle animated light caustics on water */}
+        {[0, 1, 2, 3, 4].map((i) => {
+          const cx = 80 + i * 80 + Math.sin(progress * 3 + i) * 20;
+          const cy = 80 + (i % 3) * 120 + Math.cos(progress * 2 + i * 1.5) * 15;
           return (
-            <path
-              key={y}
-              d={`M0,${y + shift} Q100,${y - 6 + shift} 200,${y + shift} Q300,${y + 6 + shift} 400,${y + shift}`}
-              fill="none"
-              stroke="rgba(96,165,250,0.12)"
-              strokeWidth={1}
+            <ellipse
+              key={`caustic-${i}`}
+              cx={cx} cy={cy}
+              rx={30 + Math.sin(progress * 4 + i) * 10}
+              ry={20 + Math.cos(progress * 3 + i) * 8}
+              fill="rgba(100,180,255,0.04)"
+              transform={`rotate(${i * 30 + progress * 20}, ${cx}, ${cy})`}
             />
           );
         })}
 
         {/* Compass rose */}
-        <g transform="translate(365, 35)" opacity={0.4}>
-          <circle cx={0} cy={0} r={16} fill="none" stroke="white" strokeWidth={0.5} />
-          <text x={0} y={-18} textAnchor="middle" fill="white" fontSize={9} fontWeight="bold">N</text>
-          <line x1={0} y1={-12} x2={0} y2={12} stroke="white" strokeWidth={0.5} />
-          <line x1={-12} y1={0} x2={12} y2={0} stroke="white" strokeWidth={0.5} />
+        <g transform="translate(370, 30)" opacity={0.5}>
+          <circle cx={0} cy={0} r={16} fill="rgba(0,0,0,0.3)" stroke="rgba(255,255,255,0.3)" strokeWidth={0.8} />
+          <text x={0} y={-19} textAnchor="middle" fill="white" fontSize={8} fontWeight="bold">N</text>
+          <line x1={0} y1={-12} x2={0} y2={12} stroke="rgba(255,255,255,0.4)" strokeWidth={0.5} />
+          <line x1={-12} y1={0} x2={12} y2={0} stroke="rgba(255,255,255,0.4)" strokeWidth={0.5} />
+          {/* North arrow */}
+          <polygon points="0,-12 -3,-6 3,-6" fill="white" opacity={0.5} />
         </g>
 
         {/* Water features */}
@@ -541,21 +708,18 @@ function ScenarioDiagram({
 
         {/* Fog overlay */}
         {isFog && (
-          <rect width="400" height="400" fill="rgba(200,200,200,0.4)" />
+          <>
+            <rect width="400" height="400" fill="rgba(180,190,200,0.55)" />
+            <rect width="400" height="400" fill="rgba(220,220,220,0.2)" filter="url(#water-noise)" />
+          </>
         )}
 
-        {/* Wake trails (behind each vessel) */}
-        {diagram.vessels.map((vessel, i) => {
-          const trail = getWakeTrail(vessel, progress);
-          return (
-            <path
-              key={`wake-${i}`}
-              d={trail}
-              fill={vessel.type === "you" ? "rgba(96,165,250,0.15)" : "rgba(255,255,255,0.08)"}
-              filter={isFog && vessel.type !== "you" ? "url(#fog-filter)" : undefined}
-            />
-          );
-        })}
+        {/* Realistic wake trails */}
+        {diagram.vessels.map((vessel, i) => (
+          <g key={`wake-${i}`} filter={isFog && vessel.type !== "you" ? "url(#fog-filter)" : undefined}>
+            <RealisticWake vessel={vessel} progress={progress} />
+          </g>
+        ))}
 
         {/* Other vessels (animated) */}
         <g filter={isFog ? "url(#fog-filter)" : undefined}>
@@ -575,13 +739,13 @@ function ScenarioDiagram({
             return <BoatIcon key={`you-${i}`} {...vessel} x={pos.x} y={pos.y} />;
           })}
 
-        {/* Collision flash overlay */}
+        {/* Collision effects */}
         {collided && (
           <>
-            <rect width="400" height="400" fill="rgba(239,68,68,0.35)" />
-            {/* Collision burst */}
+            {/* Red flash */}
+            <rect width="400" height="400" fill="rgba(239,68,68,0.3)" />
+            {/* Impact burst */}
             {(() => {
-              // Find midpoint between vessels for collision effect
               const youVessel = diagram.vessels.find((v) => v.type === "you");
               const otherVessel = diagram.vessels.find((v) => v.type !== "you");
               if (!youVessel) return null;
@@ -590,46 +754,56 @@ function ScenarioDiagram({
               const cx = (youPos.x + otherPos.x) / 2;
               const cy = (youPos.y + otherPos.y) / 2;
               return (
-                <g transform={`translate(${cx}, ${cy})`}>
+                <g transform={`translate(${cx}, ${cy})`} filter="url(#collision-glow)">
+                  {/* Splash ring */}
+                  <circle cx={0} cy={0} r={40} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={3} />
+                  <circle cx={0} cy={0} r={25} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth={2} />
                   {/* Burst rays */}
-                  {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
+                  {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle) => {
                     const rad = (angle * Math.PI) / 180;
+                    const len = 20 + (angle % 60 === 0 ? 15 : 0);
                     return (
                       <line
                         key={angle}
-                        x1={Math.cos(rad) * 10}
-                        y1={Math.sin(rad) * 10}
-                        x2={Math.cos(rad) * 35}
-                        y2={Math.sin(rad) * 35}
-                        stroke="#fbbf24"
-                        strokeWidth={3}
-                        opacity={0.8}
+                        x1={Math.cos(rad) * 8}
+                        y1={Math.sin(rad) * 8}
+                        x2={Math.cos(rad) * len}
+                        y2={Math.sin(rad) * len}
+                        stroke="white"
+                        strokeWidth={2}
+                        opacity={0.7}
+                        strokeLinecap="round"
                       />
                     );
                   })}
-                  <circle cx={0} cy={0} r={18} fill="#ef4444" opacity={0.6} />
-                  <circle cx={0} cy={0} r={10} fill="#fbbf24" opacity={0.8} />
+                  <circle cx={0} cy={0} r={14} fill="rgba(255,200,50,0.5)" />
+                  <circle cx={0} cy={0} r={8} fill="rgba(255,255,255,0.7)" />
                 </g>
               );
             })()}
-            <text x={200} y={200} textAnchor="middle" fill="white" fontSize={28} fontWeight="bold" dy={-60}
-              style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>
+            {/* COLLISION text with heavy shadow */}
+            <rect x={80} y={140} width={240} height={44} rx={8} fill="rgba(220,38,38,0.85)" />
+            <text x={200} y={168} textAnchor="middle" fill="white" fontSize={24} fontWeight="bold"
+              letterSpacing="2">
               COLLISION!
             </text>
           </>
         )}
 
-        {/* Proximity warning when vessels are close */}
-        {!collided && progress > 0.65 && diagram.vessels.length > 1 && (
-          <text x={200} y={30} textAnchor="middle" fill="#fbbf24" fontSize={14} fontWeight="bold"
-            opacity={Math.sin(progress * 20) * 0.5 + 0.5}
-            style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>
-            ⚠ VESSELS CLOSING — DECIDE NOW
-          </text>
+        {/* Proximity warning */}
+        {!collided && progress > 0.6 && diagram.vessels.length > 1 && (
+          <g>
+            <rect x={60} y={8} width={280} height={28} rx={14} fill="rgba(0,0,0,0.6)"
+              opacity={Math.sin(progress * 25) * 0.3 + 0.7} />
+            <text x={200} y={27} textAnchor="middle" fill="#fbbf24" fontSize={12} fontWeight="bold"
+              letterSpacing="1">
+              ⚠ VESSELS CLOSING — DECIDE NOW
+            </text>
+          </g>
         )}
       </svg>
 
-      {/* CSS shake animation */}
+      {/* CSS animations */}
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
