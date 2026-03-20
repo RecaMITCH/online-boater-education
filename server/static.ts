@@ -456,6 +456,117 @@ export function serveStatic(app: Express) {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 
+  // SEO: Server-side meta tag injection for games hub
+  app.get("/games", async (_req, res) => {
+    try {
+      const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+
+      const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Boating Safety Games" }
+        ]
+      };
+
+      const collectionSchema = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Boating Safety Games",
+        "url": "https://onlineboatereducation.com/games",
+        "description": "Free interactive boating safety games covering navigation rules, life jackets, fire emergencies, fueling procedures, navigation lights, and pre-departure checklists."
+      };
+
+      const enriched = injectMetaTags(indexHtml, {
+        title: "Free Boating Safety Games | Learn Navigation Rules & Safety Skills",
+        description: "Play free interactive boating safety games. Test your knowledge of navigation rules, life jackets, fire emergencies, fueling procedures, navigation lights, and pre-departure checklists.",
+        canonical: "https://onlineboatereducation.com/games",
+        structuredData: [breadcrumbSchema, collectionSchema]
+      });
+
+      return res.send(enriched);
+    } catch (error) {
+      console.error("Error injecting games hub SEO:", error);
+    }
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
+  // SEO: Server-side meta tag injection for individual game pages
+  const gamesMeta: Record<string, { title: string; description: string; name: string }> = {
+    "life-jacket-picker": {
+      title: "Life Jacket Picker Game | Choose the Right PFD Type",
+      description: "Given a boating scenario, pick the correct PFD type. Learn when to use Type I through Type V life jackets with this free interactive game.",
+      name: "Life Jacket Picker"
+    },
+    "boat-fire": {
+      title: "Boat Fire Emergency Game | Learn Fire Safety on a Boat",
+      description: "A fire breaks out on your boat — what do you do first? Practice emergency fire response and learn the PASS technique with this free interactive game.",
+      name: "Boat Fire Emergency"
+    },
+    "fueling-safety": {
+      title: "Fueling Safety Game | Learn Safe Boat Fueling Steps",
+      description: "Put the boat fueling steps in the correct order and answer quiz questions. Learn safe fueling procedures with this free interactive boating safety game.",
+      name: "Fueling Safety"
+    },
+    "nav-lights": {
+      title: "Navigation Lights at Night Game | Identify Vessels by Lights",
+      description: "You see lights approaching in the dark — identify the vessel type and heading from its light configuration. Free interactive boating navigation game.",
+      name: "Navigation Lights at Night"
+    },
+    "pre-departure": {
+      title: "Pre-Departure Checklist Game | Boating Safety Check",
+      description: "You're at the dock about to launch. Check all required safety items and skip the ones that aren't needed. Free interactive pre-departure checklist game.",
+      name: "Pre-Departure Checklist"
+    }
+  };
+
+  app.get("/games/:slug", async (req, res) => {
+    try {
+      const meta = gamesMeta[req.params.slug];
+      if (meta) {
+        const indexHtml = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+
+        const breadcrumbSchema = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://onlineboatereducation.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Games", "item": "https://onlineboatereducation.com/games" },
+            { "@type": "ListItem", "position": 3, "name": meta.name }
+          ]
+        };
+
+        const gameSchema = {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": meta.name,
+          "url": `https://onlineboatereducation.com/games/${req.params.slug}`,
+          "applicationCategory": "GameApplication",
+          "operatingSystem": "All",
+          "description": meta.description,
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        };
+
+        const enriched = injectMetaTags(indexHtml, {
+          title: meta.title,
+          description: meta.description,
+          canonical: `https://onlineboatereducation.com/games/${req.params.slug}`,
+          structuredData: [breadcrumbSchema, gameSchema]
+        });
+
+        return res.send(enriched);
+      }
+    } catch (error) {
+      console.error("Error injecting game SEO:", error);
+    }
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
   // Embed routes - serve index.html without header/footer injection
   app.get("/embed/quiz", async (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));

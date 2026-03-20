@@ -20,6 +20,12 @@ import About from "@/pages/about";
 import Quiz from "@/pages/quiz";
 import QuizEmbed from "@/pages/quiz-embed";
 import RightOfWay from "@/pages/right-of-way";
+import GamesIndex from "@/pages/games/index";
+import LifeJacketPicker from "@/pages/games/life-jacket-picker";
+import BoatFire from "@/pages/games/boat-fire";
+import FuelingSafety from "@/pages/games/fueling-safety";
+import NavLights from "@/pages/games/nav-lights";
+import PreDeparture from "@/pages/games/pre-departure";
 
 function Router() {
   return (
@@ -33,8 +39,14 @@ function Router() {
       <Route path="/quiz" component={Quiz} />
       <Route path="/embed/quiz" component={QuizEmbed} />
       <Route path="/right-of-way" component={RightOfWay} />
-          <Route path="/admin/blog/new" component={BlogEditor} />
-          <Route path="/admin/blog/:id" component={BlogEditor} />
+      <Route path="/games" component={GamesIndex} />
+      <Route path="/games/life-jacket-picker" component={LifeJacketPicker} />
+      <Route path="/games/boat-fire" component={BoatFire} />
+      <Route path="/games/fueling-safety" component={FuelingSafety} />
+      <Route path="/games/nav-lights" component={NavLights} />
+      <Route path="/games/pre-departure" component={PreDeparture} />
+      <Route path="/admin/blog/new" component={BlogEditor} />
+      <Route path="/admin/blog/:id" component={BlogEditor} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>

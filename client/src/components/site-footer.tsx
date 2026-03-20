@@ -42,8 +42,8 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/right-of-way" className="text-sm text-muted-foreground transition-colors" data-testid="link-footer-game">
-                  Play the Game
+                <Link href="/games" className="text-sm text-muted-foreground transition-colors" data-testid="link-footer-games">
+                  Games
                 </Link>
               </li>
               <li>

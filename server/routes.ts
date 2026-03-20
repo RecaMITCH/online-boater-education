@@ -86,6 +86,12 @@ Online Boater Education helps boaters find NASBLA-approved, state-approved boate
 - /quiz: "Do I Need a Boating License?" quiz tool — determines requirements by state and age, shareable results via /quiz?state={slug}&age={age}
 - /embed/quiz: Embeddable iframe version of the quiz for third-party websites
 - /right-of-way: "Right of Way" interactive boating navigation game — 10 real-world encounter scenarios testing knowledge of COLREGS navigation rules
+- /games: Boating Safety Games hub — browse all free interactive games
+- /games/life-jacket-picker: "Life Jacket Picker" game — pick the correct PFD type for each boating scenario
+- /games/boat-fire: "Boat Fire Emergency" game — practice emergency fire response and learn the PASS technique
+- /games/fueling-safety: "Fueling Safety" game — put fueling steps in correct order and answer safety quiz questions
+- /games/nav-lights: "Navigation Lights at Night" game — identify vessel type and heading from light configurations
+- /games/pre-departure: "Pre-Departure Checklist" game — check required safety items before launching
 
 ## Public API
 - /api/states: Full list of all active states with requirements data
@@ -162,6 +168,42 @@ ${articleList}
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/games</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/games/life-jacket-picker</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/games/boat-fire</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/games/fueling-safety</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/games/nav-lights</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://onlineboatereducation.com/games/pre-departure</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://onlineboatereducation.com/llms.txt</loc>
