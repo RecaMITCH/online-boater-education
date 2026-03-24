@@ -366,25 +366,47 @@ function getGrade(score: number, total: number): { grade: string; label: string;
 
 /** Realistic powerboat / motorboat (top-down) */
 function PowerboatShape({ color, isYou }: { color: string; isYou: boolean }) {
-  const hull = isYou ? color : color;
-  const hullDark = isYou ? "#1e40af" : "#991b1b";
+  const hullDark = isYou ? "#1e3a5f" : "#7f1d1d";
   const deck = isYou ? "#dbeafe" : "#fecaca";
+  const trim = isYou ? "#60a5fa" : "#f87171";
   return (
     <g>
-      {/* Shadow */}
-      <ellipse cx={2} cy={2} rx={10} ry={22} fill="rgba(0,0,0,0.25)" />
-      {/* Hull */}
-      <path d="M0,-22 C8,-20 12,-10 12,8 C12,16 8,20 4,22 L-4,22 C-8,20 -12,16 -12,8 C-12,-10 -8,-20 0,-22Z"
-        fill={hull} stroke={hullDark} strokeWidth={1.2} />
-      {/* Deck / cockpit area */}
-      <path d="M0,-14 C5,-12 7,-4 7,6 C7,10 5,14 3,16 L-3,16 C-5,14 -7,10 -7,6 C-7,-4 -5,-12 0,-14Z"
-        fill={deck} opacity={0.4} />
-      {/* Windshield */}
-      <path d="M-5,-6 C-3,-10 3,-10 5,-6" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth={1.5} strokeLinecap="round" />
-      {/* Console/helm dot */}
-      <circle cx={0} cy={-2} r={2} fill="rgba(255,255,255,0.5)" />
-      {/* Bow accent */}
-      <line x1={0} y1={-22} x2={0} y2={-16} stroke="white" strokeWidth={0.8} opacity={0.5} />
+      {/* Water shadow */}
+      <ellipse cx={2} cy={3} rx={12} ry={24} fill="rgba(0,0,0,0.3)" />
+      {/* Hull outer */}
+      <path d="M0,-24 C10,-22 14,-12 14,8 C14,18 10,22 5,24 L-5,24 C-10,22 -14,18 -14,8 C-14,-12 -10,-22 0,-24Z"
+        fill={hullDark} />
+      {/* Hull main */}
+      <path d="M0,-22 C9,-20 12,-10 12,7 C12,16 8,20 4,22 L-4,22 C-8,20 -12,16 -12,7 C-12,-10 -9,-20 0,-22Z"
+        fill={color} />
+      {/* Gunwale highlight */}
+      <path d="M0,-22 C9,-20 12,-10 12,7" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth={1} />
+      <path d="M0,-22 C-9,-20 -12,-10 -12,7" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth={0.5} />
+      {/* Deck area */}
+      <path d="M0,-16 C6,-14 8,-6 8,5 C8,12 5,16 3,18 L-3,18 C-5,16 -8,12 -8,5 C-8,-6 -6,-14 0,-16Z"
+        fill={deck} opacity={0.35} />
+      {/* Trim stripe */}
+      <path d="M-10,4 C-10,4 -8,6 0,6 C8,6 10,4 10,4" fill="none" stroke={trim} strokeWidth={1.5} opacity={0.6} />
+      {/* Windshield (curved glass) */}
+      <path d="M-6,-8 C-4,-12 4,-12 6,-8" fill="rgba(150,220,255,0.3)" stroke="rgba(255,255,255,0.6)" strokeWidth={1.2} strokeLinecap="round" />
+      <path d="M-4,-9 C-2,-11 2,-11 4,-9" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth={0.5} />
+      {/* Center console */}
+      <rect x={-3} y={-5} width={6} height={8} rx={1.5} fill="rgba(0,0,0,0.15)" />
+      {/* Helm wheel */}
+      <circle cx={0} cy={-1} r={2} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={0.8} />
+      <circle cx={0} cy={-1} r={0.8} fill="rgba(255,255,255,0.3)" />
+      {/* Seats */}
+      <rect x={-5} y={6} width={4} height={5} rx={1} fill="rgba(255,255,255,0.15)" />
+      <rect x={1} y={6} width={4} height={5} rx={1} fill="rgba(255,255,255,0.15)" />
+      {/* Motor / transom */}
+      <rect x={-4} y={20} width={8} height={3} rx={1} fill="rgba(0,0,0,0.3)" />
+      <rect x={-2} y={22} width={4} height={2} rx={0.5} fill="rgba(0,0,0,0.2)" />
+      {/* Bow point accent */}
+      <path d="M0,-24 L0,-18" stroke="white" strokeWidth={1} opacity={0.4} />
+      <circle cx={0} cy={-24} r={1} fill="white" opacity={0.5} />
+      {/* Nav lights */}
+      <circle cx={-10} cy={-8} r={1.2} fill="#22c55e" opacity={0.7} />
+      <circle cx={10} cy={-8} r={1.2} fill="#ef4444" opacity={0.7} />
     </g>
   );
 }
@@ -393,16 +415,33 @@ function PowerboatShape({ color, isYou }: { color: string; isYou: boolean }) {
 function SailboatShape({ color }: { color: string }) {
   return (
     <g>
-      <ellipse cx={2} cy={2} rx={8} ry={22} fill="rgba(0,0,0,0.2)" />
-      {/* Hull - narrow sailboat shape */}
-      <path d="M0,-24 C6,-20 8,-8 8,10 C8,16 5,20 3,22 L-3,22 C-5,20 -8,16 -8,10 C-8,-8 -6,-20 0,-24Z"
-        fill={color} stroke="rgba(0,0,0,0.3)" strokeWidth={1} />
-      {/* Main sail */}
-      <path d="M0,-18 L14,4 L0,10 Z" fill="white" opacity={0.85} stroke="rgba(0,0,0,0.15)" strokeWidth={0.5} />
+      {/* Water shadow */}
+      <ellipse cx={2} cy={3} rx={9} ry={26} fill="rgba(0,0,0,0.25)" />
+      {/* Hull - sleek sailboat shape */}
+      <path d="M0,-26 C7,-22 9,-10 9,10 C9,18 6,22 3,24 L-3,24 C-6,22 -9,18 -9,10 C-9,-10 -7,-22 0,-26Z"
+        fill={color} stroke="rgba(0,0,0,0.4)" strokeWidth={1} />
+      {/* Hull keel line */}
+      <line x1={0} y1={-24} x2={0} y2={22} stroke="rgba(0,0,0,0.15)" strokeWidth={0.5} />
+      {/* Deck */}
+      <path d="M0,-20 C5,-17 6,-8 6,8 C6,14 4,17 2,19 L-2,19 C-4,17 -6,14 -6,8 C-6,-8 -5,-17 0,-20Z"
+        fill="rgba(255,255,255,0.15)" />
+      {/* Main sail with battens */}
+      <path d="M0,-20 L16,4 L0,12 Z" fill="white" opacity={0.9} stroke="rgba(0,0,0,0.2)" strokeWidth={0.5} />
+      <line x1={2} y1={-12} x2={12} y2={-2} stroke="rgba(0,0,0,0.08)" strokeWidth={0.5} />
+      <line x1={1} y1={-4} x2={14} y2={2} stroke="rgba(0,0,0,0.08)" strokeWidth={0.5} />
+      <line x1={1} y1={4} x2={10} y2={6} stroke="rgba(0,0,0,0.08)" strokeWidth={0.5} />
+      {/* Sail shadow on water */}
+      <path d="M0,-18 L14,4 L0,10 Z" fill="rgba(0,0,0,0.06)" transform="translate(3,3)" />
       {/* Jib sail */}
-      <path d="M0,-18 L-8,0 L0,2 Z" fill="white" opacity={0.6} stroke="rgba(0,0,0,0.1)" strokeWidth={0.5} />
+      <path d="M0,-20 L-10,0 L0,2 Z" fill="white" opacity={0.7} stroke="rgba(0,0,0,0.12)" strokeWidth={0.5} />
+      {/* Boom */}
+      <line x1={0} y1={0} x2={14} y2={4} stroke="#8B7355" strokeWidth={1} opacity={0.5} />
       {/* Mast */}
-      <circle cx={0} cy={-2} r={1.5} fill="#333" />
+      <circle cx={0} cy={-2} r={2} fill="#444" stroke="#222" strokeWidth={0.5} />
+      {/* Tiller/rudder */}
+      <line x1={0} y1={20} x2={0} y2={26} stroke="#8B7355" strokeWidth={1.5} opacity={0.5} />
+      {/* Cockpit */}
+      <ellipse cx={0} cy={14} rx={3} ry={4} fill="rgba(0,0,0,0.12)" />
     </g>
   );
 }
@@ -411,19 +450,43 @@ function SailboatShape({ color }: { color: string }) {
 function CommercialShape({ color }: { color: string }) {
   return (
     <g>
-      <ellipse cx={3} cy={3} rx={16} ry={32} fill="rgba(0,0,0,0.3)" />
-      {/* Hull */}
+      {/* Water shadow */}
+      <ellipse cx={3} cy={4} rx={18} ry={36} fill="rgba(0,0,0,0.3)" />
+      {/* Hull outer */}
+      <path d="M0,-36 C16,-32 18,-16 18,16 C18,28 14,34 7,36 L-7,36 C-14,34 -18,28 -18,16 C-18,-16 -16,-32 0,-36Z"
+        fill="rgba(0,0,0,0.5)" />
+      {/* Hull main */}
       <path d="M0,-34 C14,-30 16,-14 16,16 C16,26 12,32 6,34 L-6,34 C-12,32 -16,26 -16,16 C-16,-14 -14,-30 0,-34Z"
-        fill={color} stroke="rgba(0,0,0,0.4)" strokeWidth={1.5} />
+        fill={color} />
+      {/* Waterline */}
+      <path d="M-14,8 C-14,8 -8,10 0,10 C8,10 14,8 14,8" fill="none" stroke="#1e293b" strokeWidth={1.5} opacity={0.5} />
+      {/* Hull below waterline */}
+      <path d="M0,10 C8,10 14,8 14,8 L16,16 C16,26 12,32 6,34 L-6,34 C-12,32 -16,26 -16,16 L-14,8 C-14,8 -8,10 0,10Z"
+        fill="rgba(139,0,0,0.3)" />
       {/* Deck */}
-      <rect x={-10} y={-20} width={20} height={30} rx={3} fill="rgba(255,255,255,0.15)" />
+      <rect x={-11} y={-22} width={22} height={34} rx={3} fill="rgba(200,200,200,0.15)" />
       {/* Bridge/wheelhouse */}
-      <rect x={-6} y={-16} width={12} height={8} rx={2} fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.2)" strokeWidth={0.5} />
-      {/* Containers/cargo */}
-      <rect x={-8} y={-4} width={6} height={18} rx={1} fill="rgba(255,200,50,0.4)" />
-      <rect x={2} y={-4} width={6} height={18} rx={1} fill="rgba(50,150,255,0.3)" />
+      <rect x={-7} y={-20} width={14} height={10} rx={2} fill="rgba(220,220,220,0.4)" />
+      <rect x={-6} y={-19} width={12} height={4} rx={1} fill="rgba(150,220,255,0.3)" />
+      {/* Bridge windows */}
+      <rect x={-4} y={-18} width={2.5} height={2.5} rx={0.5} fill="rgba(150,220,255,0.5)" />
+      <rect x={-0.5} y={-18} width={2.5} height={2.5} rx={0.5} fill="rgba(150,220,255,0.5)" />
+      <rect x={3} y={-18} width={2.5} height={2.5} rx={0.5} fill="rgba(150,220,255,0.5)" />
+      {/* Containers row 1 */}
+      <rect x={-9} y={-6} width={5.5} height={8} rx={0.5} fill="rgba(255,180,30,0.5)" stroke="rgba(0,0,0,0.15)" strokeWidth={0.3} />
+      <rect x={-3} y={-6} width={5.5} height={8} rx={0.5} fill="rgba(50,150,255,0.4)" stroke="rgba(0,0,0,0.15)" strokeWidth={0.3} />
+      <rect x={3} y={-6} width={5.5} height={8} rx={0.5} fill="rgba(220,50,50,0.4)" stroke="rgba(0,0,0,0.15)" strokeWidth={0.3} />
+      {/* Containers row 2 */}
+      <rect x={-9} y={4} width={5.5} height={8} rx={0.5} fill="rgba(50,180,50,0.4)" stroke="rgba(0,0,0,0.15)" strokeWidth={0.3} />
+      <rect x={-3} y={4} width={5.5} height={8} rx={0.5} fill="rgba(255,180,30,0.5)" stroke="rgba(0,0,0,0.15)" strokeWidth={0.3} />
+      <rect x={3} y={4} width={5.5} height={8} rx={0.5} fill="rgba(100,100,200,0.4)" stroke="rgba(0,0,0,0.15)" strokeWidth={0.3} />
+      {/* Crane/mast */}
+      <line x1={0} y1={-22} x2={0} y2={-30} stroke="#666" strokeWidth={1.5} />
+      <line x1={-6} y1={-28} x2={6} y2={-28} stroke="#666" strokeWidth={1} />
       {/* Bow accent */}
-      <line x1={0} y1={-34} x2={0} y2={-24} stroke="white" strokeWidth={1} opacity={0.4} />
+      <path d="M0,-34 L0,-26" stroke="white" strokeWidth={1.2} opacity={0.4} />
+      {/* Stern */}
+      <rect x={-5} y={30} width={10} height={3} rx={1} fill="rgba(0,0,0,0.2)" />
     </g>
   );
 }
@@ -432,14 +495,29 @@ function CommercialShape({ color }: { color: string }) {
 function PwcShape({ color }: { color: string }) {
   return (
     <g>
-      <ellipse cx={1} cy={1} rx={6} ry={14} fill="rgba(0,0,0,0.2)" />
+      {/* Water shadow */}
+      <ellipse cx={1} cy={2} rx={7} ry={16} fill="rgba(0,0,0,0.25)" />
       {/* Hull */}
-      <path d="M0,-16 C5,-14 7,-6 7,4 C7,10 4,14 2,16 L-2,16 C-4,14 -7,10 -7,4 C-7,-6 -5,-14 0,-16Z"
+      <path d="M0,-18 C6,-16 8,-8 8,4 C8,12 5,16 2,18 L-2,18 C-5,16 -8,12 -8,4 C-8,-8 -6,-16 0,-18Z"
         fill={color} stroke="rgba(0,0,0,0.3)" strokeWidth={1} />
+      {/* Hull accent stripe */}
+      <path d="M-6,-6 C-4,-8 4,-8 6,-6" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth={1.5} />
+      {/* Deck */}
+      <path d="M0,-12 C4,-10 5,-4 5,4 C5,8 3,12 1,14 L-1,14 C-3,12 -5,8 -5,4 C-5,-4 -4,-10 0,-12Z"
+        fill="rgba(0,0,0,0.1)" />
       {/* Seat */}
-      <ellipse cx={0} cy={2} rx={4} ry={6} fill="rgba(0,0,0,0.25)" />
-      {/* Handlebar */}
-      <line x1={-4} y1={-6} x2={4} y2={-6} stroke="rgba(255,255,255,0.5)" strokeWidth={1.5} strokeLinecap="round" />
+      <ellipse cx={0} cy={4} rx={3.5} ry={6} fill="rgba(0,0,0,0.3)" />
+      <ellipse cx={0} cy={4} rx={2.5} ry={5} fill="rgba(40,40,40,0.3)" />
+      {/* Handlebar stem */}
+      <rect x={-1} y={-10} width={2} height={5} rx={0.5} fill="rgba(60,60,60,0.5)" />
+      {/* Handlebars */}
+      <line x1={-5} y1={-8} x2={5} y2={-8} stroke="rgba(180,180,180,0.7)" strokeWidth={2} strokeLinecap="round" />
+      <circle cx={-5} cy={-8} r={1.2} fill="rgba(0,0,0,0.3)" />
+      <circle cx={5} cy={-8} r={1.2} fill="rgba(0,0,0,0.3)" />
+      {/* Bow tip */}
+      <circle cx={0} cy={-18} r={0.8} fill="white" opacity={0.4} />
+      {/* Jet nozzle */}
+      <rect x={-2} y={16} width={4} height={2} rx={0.5} fill="rgba(0,0,0,0.3)" />
     </g>
   );
 }
@@ -448,16 +526,31 @@ function PwcShape({ color }: { color: string }) {
 function KayakShape({ color }: { color: string }) {
   return (
     <g>
-      <ellipse cx={1} cy={1} rx={4} ry={18} fill="rgba(0,0,0,0.15)" />
+      {/* Water shadow */}
+      <ellipse cx={1} cy={2} rx={5} ry={22} fill="rgba(0,0,0,0.15)" />
       {/* Hull */}
-      <path d="M0,-20 C3,-16 4,-8 4,8 C4,14 2,18 0,20 C-2,18 -4,14 -4,8 C-4,-8 -3,-16 0,-20Z"
-        fill={color} stroke="rgba(0,0,0,0.2)" strokeWidth={0.8} />
+      <path d="M0,-22 C4,-18 5,-10 5,8 C5,16 3,20 0,22 C-3,20 -5,16 -5,8 C-5,-10 -4,-18 0,-22Z"
+        fill={color} stroke="rgba(0,0,0,0.25)" strokeWidth={0.8} />
+      {/* Keel line */}
+      <line x1={0} y1={-20} x2={0} y2={20} stroke="rgba(0,0,0,0.1)" strokeWidth={0.5} />
+      {/* Deck lines */}
+      <path d="M0,-18 C3,-15 3.5,-8 3.5,6 C3.5,12 2,16 0,18" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={0.5} />
+      <path d="M0,-18 C-3,-15 -3.5,-8 -3.5,6 C-3.5,12 -2,16 0,18" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={0.5} />
       {/* Cockpit opening */}
-      <ellipse cx={0} cy={0} rx={2.5} ry={4} fill="rgba(0,0,0,0.2)" />
-      {/* Paddle */}
-      <line x1={-8} y1={-3} x2={8} y2={3} stroke="#8B7355" strokeWidth={1.2} strokeLinecap="round" />
-      <ellipse cx={-8} cy={-3} rx={1.5} ry={3.5} fill="#8B7355" opacity={0.7} transform="rotate(-20 -8 -3)" />
-      <ellipse cx={8} cy={3} rx={1.5} ry={3.5} fill="#8B7355" opacity={0.7} transform="rotate(-20 8 3)" />
+      <ellipse cx={0} cy={0} rx={3} ry={5} fill="rgba(0,0,0,0.25)" />
+      <ellipse cx={0} cy={0} rx={2.5} ry={4.5} fill="rgba(30,30,30,0.15)" />
+      {/* Paddler (tiny figure) */}
+      <circle cx={0} cy={-2} r={1.5} fill="rgba(255,200,150,0.5)" />
+      {/* Paddle shaft */}
+      <line x1={-10} y1={-4} x2={10} y2={4} stroke="#6B5B3E" strokeWidth={1.3} strokeLinecap="round" />
+      {/* Paddle blades */}
+      <ellipse cx={-10} cy={-4} rx={1.8} ry={4} fill="#8B7355" opacity={0.8} transform="rotate(-25 -10 -4)" />
+      <ellipse cx={10} cy={4} rx={1.8} ry={4} fill="#8B7355" opacity={0.8} transform="rotate(-25 10 4)" />
+      {/* Paddle drip */}
+      <circle cx={-9} cy={1} r={0.5} fill="rgba(255,255,255,0.3)" />
+      {/* Bow/stern tips */}
+      <circle cx={0} cy={-22} r={0.6} fill="white" opacity={0.3} />
+      <circle cx={0} cy={22} r={0.6} fill="white" opacity={0.3} />
     </g>
   );
 }
@@ -499,40 +592,59 @@ function BoatIcon({ x, y, rotation, type, color, label }: Vessel & { x: number; 
 function RealisticWake({ vessel, progress }: { vessel: Vessel; progress: number }) {
   const pos = getAnimatedPosition(vessel, progress);
   const { dx, dy } = headingToVector(vessel.rotation);
-  // Wake length grows with progress
-  const wakeLen = 30 + progress * 50;
-  const spread = 12 + progress * 10;
+  const isLarge = vessel.type === "commercial";
+  const isSmall = vessel.type === "kayak";
+  // Wake size varies by vessel type
+  const basLen = isLarge ? 40 : isSmall ? 15 : 30;
+  const basSpread = isLarge ? 18 : isSmall ? 5 : 12;
+  const wakeLen = basLen + progress * (isLarge ? 70 : isSmall ? 25 : 50);
+  const spread = basSpread + progress * (isLarge ? 16 : isSmall ? 4 : 10);
   // Point behind the vessel
   const bx = pos.x - dx * wakeLen;
   const by = pos.y - dy * wakeLen;
   // Perpendicular for spread
   const px = -dy;
   const py = dx;
-  // Inner foam trail (brighter, narrower)
   const innerSpread = spread * 0.4;
 
   return (
-    <g opacity={0.3 + progress * 0.3}>
+    <g opacity={0.3 + progress * 0.35}>
       {/* Outer wake V */}
       <path
-        d={`M${pos.x - dx * 4},${pos.y - dy * 4}
+        d={`M${pos.x - dx * 5},${pos.y - dy * 5}
             L${bx + px * spread},${by + py * spread}
             Q${bx + px * spread * 0.3},${by + py * spread * 0.3} ${bx},${by}
             Q${bx - px * spread * 0.3},${by - py * spread * 0.3} ${bx - px * spread},${by - py * spread}
             Z`}
-        fill="rgba(255,255,255,0.12)"
+        fill="rgba(255,255,255,0.1)"
       />
-      {/* Inner foam */}
+      {/* Mid wake */}
+      <path
+        d={`M${pos.x - dx * 3},${pos.y - dy * 3}
+            L${bx + px * spread * 0.65},${by + py * spread * 0.65}
+            L${bx},${by}
+            L${bx - px * spread * 0.65},${by - py * spread * 0.65}
+            Z`}
+        fill="rgba(255,255,255,0.08)"
+      />
+      {/* Inner foam trail */}
       <path
         d={`M${pos.x - dx * 2},${pos.y - dy * 2}
             L${bx + px * innerSpread},${by + py * innerSpread}
             L${bx},${by}
             L${bx - px * innerSpread},${by - py * innerSpread}
             Z`}
-        fill="rgba(255,255,255,0.2)"
+        fill="rgba(255,255,255,0.18)"
       />
-      {/* Bow wave splash (small white arc at front) */}
-      <circle cx={pos.x + dx * 2} cy={pos.y + dy * 2} r={4} fill="rgba(255,255,255,0.25)" />
+      {/* Bow wave (white arc at front) */}
+      {!isSmall && (
+        <>
+          <circle cx={pos.x + dx * 3} cy={pos.y + dy * 3} r={isLarge ? 6 : 4} fill="rgba(255,255,255,0.2)" />
+          {/* Side spray dots */}
+          <circle cx={pos.x + px * 6 - dx * 3} cy={pos.y + py * 6 - dy * 3} r={1.5} fill="rgba(255,255,255,0.15)" />
+          <circle cx={pos.x - px * 6 - dx * 3} cy={pos.y - py * 6 - dy * 3} r={1.5} fill="rgba(255,255,255,0.15)" />
+        </>
+      )}
     </g>
   );
 }
@@ -665,28 +777,49 @@ function ScenarioDiagram({
           </filter>
         </defs>
 
-        {/* Photo water background */}
-        <image
-          href="/images/hero-boating.png"
-          x={-50} y={-50}
-          width={500} height={500}
-          preserveAspectRatio="xMidYMid slice"
-        />
-        {/* Darken overlay to make vessels pop */}
-        <rect width="400" height="400" fill="rgba(0,20,50,0.45)" />
+        {/* Water background gradient */}
+        <defs>
+          <linearGradient id="water-bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#0a4a7a" />
+            <stop offset="40%" stopColor="#0c5d8f" />
+            <stop offset="100%" stopColor="#064273" />
+          </linearGradient>
+          <linearGradient id="wave-light" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="rgba(255,255,255,0)" />
+            <stop offset="50%" stopColor="rgba(255,255,255,0.06)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </linearGradient>
+        </defs>
+        <rect width="400" height="400" fill="url(#water-bg)" />
 
-        {/* Subtle animated light caustics on water */}
-        {[0, 1, 2, 3, 4].map((i) => {
-          const cx = 80 + i * 80 + Math.sin(progress * 3 + i) * 20;
-          const cy = 80 + (i % 3) * 120 + Math.cos(progress * 2 + i * 1.5) * 15;
+        {/* Animated wave lines */}
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+          const y = 30 + i * 50;
+          const offset = Math.sin(progress * 4 + i * 0.8) * 15;
+          const offset2 = Math.cos(progress * 3 + i * 1.2) * 10;
+          return (
+            <path
+              key={`wave-${i}`}
+              d={`M${-20 + offset},${y} Q${80 + offset2},${y - 8} ${180 + offset},${y} T${400 + offset},${y}`}
+              fill="none"
+              stroke="rgba(120,200,255,0.08)"
+              strokeWidth={1 + (i % 2) * 0.5}
+            />
+          );
+        })}
+
+        {/* Light caustic patches */}
+        {[0, 1, 2, 3, 4, 5].map((i) => {
+          const cx = 60 + i * 65 + Math.sin(progress * 3 + i * 1.3) * 20;
+          const cy = 50 + (i % 3) * 130 + Math.cos(progress * 2.5 + i * 1.7) * 18;
           return (
             <ellipse
               key={`caustic-${i}`}
               cx={cx} cy={cy}
-              rx={30 + Math.sin(progress * 4 + i) * 10}
-              ry={20 + Math.cos(progress * 3 + i) * 8}
-              fill="rgba(100,180,255,0.04)"
-              transform={`rotate(${i * 30 + progress * 20}, ${cx}, ${cy})`}
+              rx={25 + Math.sin(progress * 4 + i) * 10}
+              ry={16 + Math.cos(progress * 3 + i) * 6}
+              fill="rgba(100,190,255,0.05)"
+              transform={`rotate(${i * 25 + progress * 15}, ${cx}, ${cy})`}
             />
           );
         })}
